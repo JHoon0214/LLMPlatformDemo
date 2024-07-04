@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Chat Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .chat-container {
+            width: 1600px;
+            height: 900px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-header {
+            padding: 10px;
+            background-color: #1e90ff;
+            color: white;
+            text-align: center;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        .chat-box {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+        }
+        .message {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+        .received {
+            align-self: flex-start;
+            background-color: #e0e0e0;
+        }
+        .sent {
+            align-self: flex-end;
+            background-color: #1e90ff;
+            color: white;
+        }
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+            font-size: 16px;
+        }
+        .chat-input button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #1e90ff;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .chat-input button:hover {
+            background-color: #1e90ff;
+        }
+    </style>
+</head>
+<body>
+<div class="chat-container">
+    <div class="chat-header">
+        <h1>LLM LOG</h1>
+    </div>
+    <div class="chat-box" id="chat-box">
+        <!-- 채팅 메시지가 여기에 표시됩니다 -->
+    </div>
+    <div class="chat-input">
+        <input type="text" id="message-input" placeholder="아직 데모 버전이라 잘못된 응답이 나올 수 있습니다." />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script>
+    let socket = new WebSocket("ws://localhost:8080/chat");
+
+    socket.onmessage = function(event) {
+        const chatBox = document.getElementById('chat-box');
+        const messageElement = document.createElement('div');
+        messageElement.textContent = event.data;
+        messageElement.classList.add('message', 'received');
+        chatBox.appendChild(messageElement);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    };
+
+    function sendMessage() {
+        const messageInput = document.getElementById('message-input');
+        const message = messageInput.value.trim();
+
+        if (message) {
+            const chatBox = document.getElementById('chat-box');
+            const messageElement = document.createElement('div');
+            messageElement.textContent = message;
+            messageElement.classList.add('message', 'sent');
+            chatBox.appendChild(messageElement);
+            socket.send(message);
+            messageInput.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    }
+
+    document.getElementById('message-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+</script>
+</body>
+</html>
