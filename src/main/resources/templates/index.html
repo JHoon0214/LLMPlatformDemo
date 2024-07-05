@@ -14,8 +14,8 @@
             background-color: #f0f0f0;
         }
         .chat-container {
-            width: 1600px;
-            height: 900px;
+            width: 800px;
+            height: 600px;
             background-color: white;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -44,6 +44,7 @@
             border-radius: 4px;
             max-width: 70%;
             word-wrap: break-word;
+            white-space: pre-wrap; /* Add this line to preserve whitespace and line breaks */
         }
         .received {
             align-self: flex-start;
@@ -89,39 +90,50 @@
         <h1>LLM LOG</h1>
     </div>
     <div class="chat-box" id="chat-box">
-        <!-- 채팅 메시지가 여기에 표시됩니다 -->
+        <div th:each="message : ${messages}" th:classappend="${message.userInput} ? 'message sent' : 'message received'" th:text="${message.text}"></div>
     </div>
     <div class="chat-input">
-        <input type="text" id="message-input" placeholder="아직 데모 버전이라 잘못된 응답이 나올 수 있습니다." />
+        <input type="text" id="message-input" placeholder="Enter your message here" />
         <button onclick="sendMessage()">Send</button>
     </div>
 </div>
 
 <script>
-    let socket = new WebSocket("ws://localhost:8080/chat");
-
-    socket.onmessage = function(event) {
+    function appendMessage(message, className) {
         const chatBox = document.getElementById('chat-box');
         const messageElement = document.createElement('div');
-        messageElement.textContent = event.data;
-        messageElement.classList.add('message', 'received');
+        messageElement.textContent = message;
+        messageElement.classList.add('message', className);
         chatBox.appendChild(messageElement);
         chatBox.scrollTop = chatBox.scrollHeight;
-    };
+    }
 
     function sendMessage() {
         const messageInput = document.getElementById('message-input');
         const message = messageInput.value.trim();
 
         if (message) {
-            const chatBox = document.getElementById('chat-box');
-            const messageElement = document.createElement('div');
-            messageElement.textContent = message;
-            messageElement.classList.add('message', 'sent');
-            chatBox.appendChild(messageElement);
-            socket.send(message);
+            appendMessage(message, 'sent');
+
+            fetch('/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: message }),
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    appendMessage(data.response, 'received');
+                })
+                .catch(error => console.error('Error:', error));
+
             messageInput.value = '';
-            chatBox.scrollTop = chatBox.scrollHeight;
         }
     }
 
