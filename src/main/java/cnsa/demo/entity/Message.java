@@ -15,8 +15,8 @@ public class Message {
     private Long id;
 
     @Column(nullable = false, columnDefinition = "LONGTEXT")
-    private String text;
+    private String content;
 
     @Column(nullable = false)
-    private boolean isUserInput;
+    private String role;
 }

@@ -121,17 +121,12 @@
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ text: message }),
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    appendMessage(data.response, 'received');
-                })
-                .catch(error => console.error('Error:', error));
+            }).then(() => {
+                const eventSource = new EventSource('/stream');
+                eventSource.onmessage = function(event) {
+                    appendMessage(event.data, 'received');
+                };
+            }).catch(error => console.error('Error:', error));
 
             messageInput.value = '';
         }
