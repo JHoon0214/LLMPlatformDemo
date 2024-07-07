@@ -42,7 +42,9 @@ public class DemoService {
         List<Message> messages = messageRepository.findAll();
         List<GlobalMessageDTO> messageDTOs = new ArrayList<>();
 
-        for(Message message: messages) messageDTOs.add(new GlobalMessageDTO(message));
+        for (Message message : messages) {
+            messageDTOs.add(new GlobalMessageDTO(message));
+        }
 
         return messageDTOs;
     }
@@ -57,7 +59,7 @@ public class DemoService {
 
         List<GPTMessageDTO> messages = new ArrayList<>();
 
-        for(GlobalMessageDTO messageDTO:conversations) {
+        for (GlobalMessageDTO messageDTO : conversations) {
             GPTMessageDTO gptMessageDTO = new GPTMessageDTO();
             gptMessageDTO.convertMessageToIModelMessage(messageDTO);
             messages.add(gptMessageDTO);
@@ -71,13 +73,11 @@ public class DemoService {
                 .messages(messages)
                 .build();
 
-        Flux<String> eventStream = webClient.post()
+        return webClient.post()
                 .bodyValue(request)
                 .accept(MediaType.TEXT_EVENT_STREAM)
                 .retrieve()
                 .bodyToFlux(String.class);
-
-        return eventStream;
     }
 
     public SseEmitter streamMessages() {
@@ -91,24 +91,34 @@ public class DemoService {
                 event -> {
                     try {
                         String content = extractContent(event);
-                        emitter.send(content);
+                        if (!content.isEmpty()) {
+                            SseEmitter.SseEventBuilder eventBuilder = SseEmitter.event()
+                                    .data(content)
+                                    .name("message");
+                            emitter.send(eventBuilder);
+                            gptResponse.append(content);
+                        }
                     } catch (IOException e) {
                         emitter.completeWithError(e);
                     }
                 },
                 error -> emitter.completeWithError(error),
-                emitter::complete
-        );
+                () -> {
+                    try {
+                        emitter.send(SseEmitter.event()
+                                .data("")
+                                .name("end"));
+                        emitter.complete();
 
-        eventStream.toStream().forEach(event -> {
-            String content = extractContent(event);
-            gptResponse.append(content);
-        });
-
-        saveMessage(GlobalMessageDTO.builder()
-                .content(gptResponse.toString())
-                .role(GPT3_5Config.ROLE_ASSISTANT)
-                .build()
+                        // Save the GPT response to the database
+                        saveMessage(GlobalMessageDTO.builder()
+                                .content(gptResponse.toString())
+                                .role(GPT3_5Config.ROLE_ASSISTANT)
+                                .build());
+                    } catch (IOException e) {
+                        emitter.completeWithError(e);
+                    }
+                }
         );
 
         return emitter;
@@ -123,70 +133,4 @@ public class DemoService {
             return "";
         }
     }
-
-    public void handleStream(List<GlobalMessageDTO> allMessages) {
-        // 스트리밍된 응답을 처리하는 로직 구현
-        Flux<String> eventStream = getResponse(allMessages);
-        StringBuilder gptResponse = new StringBuilder();
-
-        eventStream.toStream().forEach(event -> {
-            String content = extractContent(event);
-            gptResponse.append(content);
-        });
-
-        saveMessage(GlobalMessageDTO.builder()
-                .content(gptResponse.toString())
-                .role(GPT3_5Config.ROLE_ASSISTANT)
-                .build()
-        );
-    }
-
-    //    private List<Map<String, String>> parseConversationToGPTInput(List<Message> conversation) {
-//        List<Map<String, String>> ret = new ArrayList<>();
-//
-//        Map<String, String> system = new HashMap<>();
-//        system.put("role", "system");
-//        system.put("content", "you are chat gpt. You have to look at the user's question and give an appropriate answer. If necessary, you can refer to our previous conversation. Content with a role of user is input made by the user, and content with a role of assistant is a response made by gpt in the past.");
-//
-//        ret.add(system);
-//
-//        for(Message curr: conversation) {
-//            Map<String, String> map = new HashMap<>();
-//            if(curr.isUserInput()) map.put("role", "user");
-//            else map.put("role", "assistant");
-//
-//            map.put("content", curr.getText());
-//
-//            ret.add(map);
-//        }
-//        return ret;
-//    }
-
-//    public String getGptResponse(List<GlobalMessageDTO> conversation) {
-//        String url = "https://api.openai.com/v1/chat/completions";
-//        RestTemplate restTemplate = new RestTemplate();
-//
-//        for(GlobalMessageDTO message:conversation) {
-//            System.out.println(message.getText() + "\n");
-//        }
-//
-//        Map<String, Object> request = new HashMap<>();
-//        request.put("model", "gpt-3.5-turbo");
-//        request.put("messages", parseConversationToGPTInput(conversation));
-//        request.put("max_tokens", 4096);
-//        request.put("temperature", 0.7);
-//
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.add("Authorization", "Bearer " + apiKey);
-//
-//        HttpEntity<Map<String, Object>> httpEntity = new HttpEntity<>(request, headers);
-//
-//        ResponseEntity<Map> responseEntity = restTemplate.postForEntity(url, httpEntity, Map.class);
-//        System.out.println(responseEntity);
-//        List<Map<String, Object>> list = ((List) responseEntity.getBody().get("choices"));
-//        String ret = ((Map<String, String>)list.get(0).get("message")).get("content");
-//        System.out.println(ret);
-//
-//        return ret;
-//    }
 }

@@ -44,7 +44,7 @@
             border-radius: 4px;
             max-width: 70%;
             word-wrap: break-word;
-            white-space: pre-wrap; /* Add this line to preserve whitespace and line breaks */
+            white-space: pre-wrap;
         }
         .received {
             align-self: flex-start;
@@ -90,7 +90,7 @@
         <h1>LLM LOG</h1>
     </div>
     <div class="chat-box" id="chat-box">
-        <div th:each="message : ${messages}" th:classappend="${message.userInput} ? 'message sent' : 'message received'" th:text="${message.text}"></div>
+        <div th:each="message : ${messages}" th:classappend="${message.role=='user'} ? 'message sent' : 'message received'" th:text="${message.content}"></div>
     </div>
     <div class="chat-input">
         <input type="text" id="message-input" placeholder="Enter your message here" />
@@ -99,13 +99,19 @@
 </div>
 
 <script>
-    function appendMessage(message, className) {
+    function appendMessage(message, className, messageElement = null) {
         const chatBox = document.getElementById('chat-box');
-        const messageElement = document.createElement('div');
-        messageElement.textContent = message;
-        messageElement.classList.add('message', className);
-        chatBox.appendChild(messageElement);
+
+        if (!messageElement) {
+            messageElement = document.createElement('div');
+            messageElement.classList.add('message', className);
+            chatBox.appendChild(messageElement);
+        }
+
+        messageElement.textContent += message;
         chatBox.scrollTop = chatBox.scrollHeight;
+
+        return messageElement;
     }
 
     function sendMessage() {
@@ -113,7 +119,7 @@
         const message = messageInput.value.trim();
 
         if (message) {
-            appendMessage(message, 'sent');
+            let sentMessageElement = appendMessage(message, 'sent');
 
             fetch('/send', {
                 method: 'POST',
@@ -122,17 +128,26 @@
                 },
                 body: JSON.stringify({ text: message }),
             }).then(() => {
+                console.log("enter");
                 const eventSource = new EventSource('/stream');
+                let receivedMessageElement = null;
+
                 eventSource.onmessage = function(event) {
-                    appendMessage(event.data, 'received');
+                    console.log("message added");
+                    receivedMessageElement = appendMessage(event.data, 'received', receivedMessageElement);
                 };
+
+                eventSource.addEventListener('end', function(event) {
+                    appendMessage(event.data, 'end', receivedMessageElement);
+                    eventSource.close();
+                });
             }).catch(error => console.error('Error:', error));
 
             messageInput.value = '';
         }
     }
 
-    document.getElementById('message-input').addEventListener('keypress', function (e) {
+    document.getElementById('message-input').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             sendMessage();
         }

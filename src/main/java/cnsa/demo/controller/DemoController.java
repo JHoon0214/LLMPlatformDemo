@@ -68,6 +68,7 @@ public class DemoController {
 
     @GetMapping("/stream")
     public SseEmitter streamMessages() {
+        System.out.println("stream is called");
         return demoService.streamMessages();
     }
 
