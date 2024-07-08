@@ -3,7 +3,7 @@ package cnsa.demo.service.llm.GPT;
 import cnsa.demo.DTO.messageDTO.GPTMessageDTO;
 import cnsa.demo.DTO.messageDTO.GlobalMessageDTO;
 import cnsa.demo.DTO.requestDTO.GptRequestDTO;
-import cnsa.demo.config.GPT3_5Config;
+import cnsa.demo.config.LLM.GPT3_5Config;
 import cnsa.demo.service.llm.LLMService;
 import cnsa.demo.service.message.IMessageService;
 import com.fasterxml.jackson.databind.JsonNode;

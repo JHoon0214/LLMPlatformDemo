@@ -1,4 +1,4 @@
-package cnsa.demo.controller;
+package cnsa.demo.controller.LLM;
 
 import cnsa.demo.service.llm.ILLMService;
 import org.springframework.beans.factory.annotation.Qualifier;

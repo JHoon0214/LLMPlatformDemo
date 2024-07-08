@@ -1,6 +1,6 @@
 package cnsa.demo.DTO.messageDTO;
 
-import cnsa.demo.entity.Message;
+import cnsa.demo.domain.Message;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

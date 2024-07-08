@@ -1,7 +1,7 @@
 package cnsa.demo.service.message;
 
 import cnsa.demo.DTO.messageDTO.GlobalMessageDTO;
-import cnsa.demo.entity.Message;
+import cnsa.demo.domain.Message;
 import cnsa.demo.repository.MessageRepository;
 import org.springframework.stereotype.Service;
 

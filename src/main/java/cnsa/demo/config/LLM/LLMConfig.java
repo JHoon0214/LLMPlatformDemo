@@ -1,4 +1,4 @@
-package cnsa.demo.config;
+package cnsa.demo.config.LLM;
 
 import lombok.Getter;
 
