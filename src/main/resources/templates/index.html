@@ -94,7 +94,8 @@
     </div>
     <div class="chat-input">
         <input type="text" id="message-input" placeholder="Enter your message here" />
-        <button onclick="sendMessage()">Send</button>
+        <button onclick="sendMessageToGpt3_5()">gpt3.5</button>
+        <button onclick="sendMessageToGpt4o()">gpt4o</button>
     </div>
 </div>
 
@@ -114,14 +115,14 @@
         return messageElement;
     }
 
-    function sendMessage() {
+    function sendMessageToGpt3_5() {
         const messageInput = document.getElementById('message-input');
         const message = messageInput.value.trim();
 
         if (message) {
             let sentMessageElement = appendMessage(message, 'sent');
 
-            fetch('/send', {
+            fetch('/chat/send', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -129,7 +130,40 @@
                 body: JSON.stringify({ text: message }),
             }).then(() => {
                 console.log("enter");
-                const eventSource = new EventSource('/stream');
+                const eventSource = new EventSource('/chat/gpt3_5/stream');
+                let receivedMessageElement = null;
+
+                eventSource.onmessage = function(event) {
+                    console.log("message added");
+                    receivedMessageElement = appendMessage(event.data, 'received', receivedMessageElement);
+                };
+
+                eventSource.addEventListener('end', function(event) {
+                    appendMessage(event.data, 'end', receivedMessageElement);
+                    eventSource.close();
+                });
+            }).catch(error => console.error('Error:', error));
+
+            messageInput.value = '';
+        }
+    }
+
+    function sendMessageToGpt4o() {
+        const messageInput = document.getElementById('message-input');
+        const message = messageInput.value.trim();
+
+        if (message) {
+            let sentMessageElement = appendMessage(message, 'sent');
+
+            fetch('/chat/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: message }),
+            }).then(() => {
+                console.log("enter");
+                const eventSource = new EventSource('/chat/gpt4o/stream');
                 let receivedMessageElement = null;
 
                 eventSource.onmessage = function(event) {
@@ -149,7 +183,7 @@
 
     document.getElementById('message-input').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
-            sendMessage();
+            sendMessageToGpt3_5();
         }
     });
 </script>
