@@ -13,3 +13,6 @@ spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL5Dialect
 
 # OpenAI API Key
 openai.api.key=your_openai_api_key
+
+# Google Social Login
+spring.profiles.include=oauth

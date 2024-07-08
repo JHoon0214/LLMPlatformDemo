@@ -1,4 +1,4 @@
-package cnsa.demo.controller;
+package cnsa.demo.controller.LLM;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;

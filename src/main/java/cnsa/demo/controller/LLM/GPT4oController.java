@@ -1,7 +1,6 @@
-package cnsa.demo.controller;
+package cnsa.demo.controller.LLM;
 
 import cnsa.demo.service.llm.ILLMService;
-import cnsa.demo.service.message.IMessageService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

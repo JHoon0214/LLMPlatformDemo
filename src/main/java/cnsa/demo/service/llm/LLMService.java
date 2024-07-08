@@ -1,9 +1,8 @@
 package cnsa.demo.service.llm;
 
 import cnsa.demo.DTO.messageDTO.GlobalMessageDTO;
-import cnsa.demo.config.LLMConfig;
+import cnsa.demo.config.LLM.LLMConfig;
 import cnsa.demo.service.message.IMessageService;
-import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
 
