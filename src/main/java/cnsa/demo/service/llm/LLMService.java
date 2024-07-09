@@ -2,25 +2,28 @@ package cnsa.demo.service.llm;
 
 import cnsa.demo.DTO.messageDTO.GlobalMessageDTO;
 import cnsa.demo.config.LLM.LLMConfig;
+import cnsa.demo.domain.Workspace;
+import cnsa.demo.repository.WorkspaceRepository;
 import cnsa.demo.service.message.IMessageService;
+import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 
+@RequiredArgsConstructor
 public abstract class LLMService implements ILLMService {
 
     private final IMessageService messageService;
-
-    protected LLMService(IMessageService messageService) {
-        this.messageService = messageService;
-    }
+    private final HttpSession httpSession;
 
     @Override
-    public SseEmitter streamMessages() {
+    public SseEmitter streamMessages(Workspace workspace) {
         SseEmitter emitter = new SseEmitter();
-        List<GlobalMessageDTO> allMessages = messageService.getAllMessage();
+        List<GlobalMessageDTO> allMessages = messageService.getAllMessage(workspace);
 
         Flux<String> eventStream = getResponse(allMessages);
         StringBuilder llmResponse = new StringBuilder();
@@ -52,6 +55,8 @@ public abstract class LLMService implements ILLMService {
                         messageService.saveMessage(GlobalMessageDTO.builder()
                                 .content(llmResponse.toString())
                                 .role(LLMConfig.ROLE_ASSISTANT)
+                                .createdAt(LocalDateTime.now())
+                                .workspace(workspace)
                                 .build());
                     } catch (IOException e) {
                         emitter.completeWithError(e);
