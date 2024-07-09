@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Workspace List</title>
+</head>
+<body>
+<h1>Workspace List</h1>
+<ul>
+    <li th:each="workspace : ${workspaces}">
+        <a th:text="${workspace.workspaceName}" th:href="@{'/workspace/' + ${workspace.id}}"></a>
+    </li>
+</ul>
+<button onclick="createWorkspace()">+ Add Workspace</button>
+
+<script>
+    function createWorkspace() {
+        fetch('/workspace/creation', {
+            method: 'POST'
+        }).then(response => response.json())
+            .then(data => {
+                window.location.reload();
+            });
+    }
+</script>
+</body>
+</html>

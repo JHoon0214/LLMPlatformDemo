@@ -4,10 +4,13 @@ import cnsa.demo.DTO.messageDTO.GPTMessageDTO;
 import cnsa.demo.DTO.messageDTO.GlobalMessageDTO;
 import cnsa.demo.DTO.requestDTO.GptRequestDTO;
 import cnsa.demo.config.LLM.GPT4oConfig;
+import cnsa.demo.repository.WorkspaceRepository;
 import cnsa.demo.service.llm.LLMService;
 import cnsa.demo.service.message.IMessageService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -23,8 +26,9 @@ public class GPT4oService extends LLMService {
     @Value("${openai.api.key}")
     private String apiKey;
 
-    protected GPT4oService(IMessageService messageService) {
-        super(messageService);
+    @Autowired
+    public GPT4oService(IMessageService messageService, HttpSession httpSession) {
+        super(messageService, httpSession);
     }
     @Override
     public Flux<String> getResponse(List<GlobalMessageDTO> conversations) {

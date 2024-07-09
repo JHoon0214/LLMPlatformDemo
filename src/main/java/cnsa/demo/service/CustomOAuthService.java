@@ -1,7 +1,7 @@
 package cnsa.demo.service;
 
-import cnsa.demo.DTO.OAuthAttributes;
-import cnsa.demo.DTO.SessionUser;
+import cnsa.demo.DTO.Security.OAuthAttributes;
+import cnsa.demo.DTO.Security.SessionUser;
 import cnsa.demo.domain.User;
 import cnsa.demo.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
