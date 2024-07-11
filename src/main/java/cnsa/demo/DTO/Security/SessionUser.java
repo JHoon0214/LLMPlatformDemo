@@ -1,4 +1,4 @@
-package cnsa.demo.DTO;
+package cnsa.demo.DTO.Security;
 
 import cnsa.demo.domain.User;
 import lombok.Getter;
