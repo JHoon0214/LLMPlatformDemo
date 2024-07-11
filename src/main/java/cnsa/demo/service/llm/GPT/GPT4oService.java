@@ -28,13 +28,12 @@ public class GPT4oService extends LLMService {
     }
     @Override
     public Flux<String> getResponse(List<GlobalMessageDTO> conversations) {
+        List<GPTMessageDTO> messages = new ArrayList<>();
         WebClient webClient = WebClient.builder()
                 .baseUrl(GPT4oConfig.CHAT_URL)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(GPT4oConfig.AUTHORIZATION, GPT4oConfig.BEARER + apiKey)
                 .build();
-
-        List<GPTMessageDTO> messages = new ArrayList<>();
 
         for (GlobalMessageDTO messageDTO : conversations) {
             GPTMessageDTO gptMessageDTO = new GPTMessageDTO();
