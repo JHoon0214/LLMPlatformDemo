@@ -40,3 +40,6 @@ out/
 src/main/resources/application.properties
 src/main/resources/application-oauth.properties
 src/test/resources/application-test.properties
+
+### prompt ###
+src/main/java/cnsa/demo/config/LLM/GPT3_5System.java
