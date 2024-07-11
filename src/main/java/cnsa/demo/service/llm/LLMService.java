@@ -2,53 +2,32 @@ package cnsa.demo.service.llm;
 
 import cnsa.demo.DTO.messageDTO.GlobalMessageDTO;
 import cnsa.demo.config.LLM.LLMConfig;
-<<<<<<< HEAD
+
+import cnsa.demo.domain.Message;
+import cnsa.demo.domain.Workspace;
 import cnsa.demo.repository.MessageRepository;
 import cnsa.demo.service.message.IMessageService;
-=======
-import cnsa.demo.domain.Workspace;
-import cnsa.demo.repository.WorkspaceRepository;
-import cnsa.demo.service.message.IMessageService;
-import jakarta.servlet.http.HttpSession;
->>>>>>> 1e02964cb5f70bcdb27bd00c6552a0d0376db58c
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
 
 import java.io.IOException;
-<<<<<<< HEAD
-import java.util.ArrayList;
-=======
 import java.time.LocalDateTime;
->>>>>>> 1e02964cb5f70bcdb27bd00c6552a0d0376db58c
+
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @RequiredArgsConstructor
 public abstract class LLMService implements ILLMService {
 
     private final IMessageService messageService;
-<<<<<<< HEAD
     private final MessageRepository messageRepository;
-
-    protected LLMService(IMessageService messageService, MessageRepository messageRepository) {
-        this.messageService = messageService;
-        this.messageRepository = messageRepository;
-    }
-=======
-    private final HttpSession httpSession;
->>>>>>> 1e02964cb5f70bcdb27bd00c6552a0d0376db58c
-
     @Override
     public SseEmitter streamMessages(Workspace workspace) {
         SseEmitter emitter = new SseEmitter();
-<<<<<<< HEAD
-        List<GlobalMessageDTO> allMessages = getLLMInputs();
-=======
-        List<GlobalMessageDTO> allMessages = messageService.getAllMessage(workspace);
->>>>>>> 1e02964cb5f70bcdb27bd00c6552a0d0376db58c
+        List<GlobalMessageDTO> inputMessages = getLLMInputs();
 
-        Flux<String> eventStream = getResponse(allMessages);
+        Flux<String> eventStream = getResponse(inputMessages);
         StringBuilder llmResponse = new StringBuilder();
 
         eventStream.subscribe(
@@ -93,12 +72,21 @@ public abstract class LLMService implements ILLMService {
 
     @Override
     public List<GlobalMessageDTO> getLLMInputs() {
-        List<GlobalMessageDTO> globalMessageDTOS = messageRepository
-        if(globalMessageDTOS == null) throw new RuntimeException("The Messages is Null");
+        List<Message> messages = messageRepository.findTop10ByOrderByCreatedAtDesc();
+        if(messages == null) throw new RuntimeException("The Messages is Null");
+        if(messages.isEmpty()) throw new RuntimeException("User input is not saved");
 
-        int size = globalMessageDTOS.size();
-        int startIndex = Math.max(size-10, 0);
-        List<GlobalMessageDTO> parsedDatas = new ArrayList<>(globalMessageDTOS.subList(startIndex, size));
+        List<GlobalMessageDTO> parsedDatas = new ArrayList<>();
+
+        parsedDatas.add(GlobalMessageDTO.builder()
+                .createdAt(messages.get(0).getCreatedAt())
+                .content("You are a generative AI that looks at a list of recent conversations between you and the user and answers the user's most recent questions. The role of the sentence you created is assistant, and the role of the sentence created by the user is user. Also, the delivered messages array is sorted in chronological order, and you only need to respond to the last message in the array. When responding to the last message, refer to the previous conversation list if necessary.")
+                .role("system")
+                .workspace(messages.get(0).getWorkspace())
+                .build()
+        );
+
+        for(int i=messages.size()-1; i>=0; i--) parsedDatas.add(new GlobalMessageDTO(messages.get(i)));
 
         return parsedDatas;
     }

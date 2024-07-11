@@ -12,5 +12,5 @@ public interface ILLMService {
 
     Flux<String> getResponse(List<GlobalMessageDTO> conversations);
     String extractContent(String jsonEvent);
-    List<GlobalMessageDTO> getLLMInputs(List<GlobalMessageDTO> globalMessageDTOS);
+    List<GlobalMessageDTO> getLLMInputs();
 }
