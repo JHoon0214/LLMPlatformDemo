@@ -4,6 +4,7 @@ import cnsa.demo.DTO.messageDTO.GPTMessageDTO;
 import cnsa.demo.DTO.messageDTO.GlobalMessageDTO;
 import cnsa.demo.DTO.requestDTO.GptRequestDTO;
 import cnsa.demo.config.LLM.GPT3_5Config;
+import cnsa.demo.repository.MessageRepository;
 import cnsa.demo.repository.WorkspaceRepository;
 import cnsa.demo.service.llm.LLMService;
 import cnsa.demo.service.message.IMessageService;
@@ -28,8 +29,8 @@ public class GPT3_5Service extends LLMService {
     private String apiKey;
 
     @Autowired
-    public GPT3_5Service(IMessageService messageService, HttpSession httpSession) {
-        super(messageService, httpSession);
+    public GPT3_5Service(IMessageService messageService, MessageRepository messageRepository) {
+        super(messageService, messageRepository);
     }
 
     @Override
@@ -42,11 +43,18 @@ public class GPT3_5Service extends LLMService {
 
         List<GPTMessageDTO> messages = new ArrayList<>();
 
+        System.out.println("<------ Inputs ------->\n");
+
+        int cnt=1;
+
         for (GlobalMessageDTO messageDTO : conversations) {
             GPTMessageDTO gptMessageDTO = new GPTMessageDTO();
             gptMessageDTO.convertMessageToIModelMessage(messageDTO);
             messages.add(gptMessageDTO);
+            System.out.println(cnt + ". " + gptMessageDTO.getRole() + ": " + gptMessageDTO.getContent()+"\n");
+            cnt++;
         }
+        System.out.println("----------------------\n");
 
         GptRequestDTO request = GptRequestDTO.builder()
                 .model(GPT3_5Config.CHAT_MODEL)

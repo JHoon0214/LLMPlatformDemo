@@ -4,6 +4,7 @@ import cnsa.demo.DTO.messageDTO.GPTMessageDTO;
 import cnsa.demo.DTO.messageDTO.GlobalMessageDTO;
 import cnsa.demo.DTO.requestDTO.GptRequestDTO;
 import cnsa.demo.config.LLM.GPT4oConfig;
+import cnsa.demo.repository.MessageRepository;
 import cnsa.demo.repository.WorkspaceRepository;
 import cnsa.demo.service.llm.LLMService;
 import cnsa.demo.service.message.IMessageService;
@@ -27,18 +28,17 @@ public class GPT4oService extends LLMService {
     private String apiKey;
 
     @Autowired
-    public GPT4oService(IMessageService messageService, HttpSession httpSession) {
-        super(messageService, httpSession);
+    public GPT4oService(IMessageService messageService, MessageRepository messageRepository) {
+        super(messageService, messageRepository);
     }
     @Override
     public Flux<String> getResponse(List<GlobalMessageDTO> conversations) {
+        List<GPTMessageDTO> messages = new ArrayList<>();
         WebClient webClient = WebClient.builder()
                 .baseUrl(GPT4oConfig.CHAT_URL)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(GPT4oConfig.AUTHORIZATION, GPT4oConfig.BEARER + apiKey)
                 .build();
-
-        List<GPTMessageDTO> messages = new ArrayList<>();
 
         for (GlobalMessageDTO messageDTO : conversations) {
             GPTMessageDTO gptMessageDTO = new GPTMessageDTO();
