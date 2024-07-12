@@ -28,8 +28,8 @@ public class GPT4oService extends LLMService {
     private String apiKey;
 
     @Autowired
-    public GPT4oService(IMessageService messageService, MessageRepository messageRepository) {
-        super(messageService, messageRepository);
+    public GPT4oService(IMessageService messageService, MessageRepository messageRepository, HttpSession httpSession) {
+        super(messageService, messageRepository, httpSession);
     }
     @Override
     public Flux<String> getResponse(List<GlobalMessageDTO> conversations) {

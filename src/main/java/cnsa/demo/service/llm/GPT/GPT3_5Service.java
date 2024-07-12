@@ -29,8 +29,8 @@ public class GPT3_5Service extends LLMService {
     private String apiKey;
 
     @Autowired
-    public GPT3_5Service(IMessageService messageService, MessageRepository messageRepository) {
-        super(messageService, messageRepository);
+    public GPT3_5Service(IMessageService messageService, MessageRepository messageRepository, HttpSession httpSession) {
+        super(messageService, messageRepository, httpSession);
     }
 
     @Override

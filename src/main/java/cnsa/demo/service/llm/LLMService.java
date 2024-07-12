@@ -1,12 +1,15 @@
 package cnsa.demo.service.llm;
 
 import cnsa.demo.DTO.messageDTO.GlobalMessageDTO;
+import cnsa.demo.config.LLM.GPT3_5System;
+import cnsa.demo.config.LLM.GPT4oSystem;
 import cnsa.demo.config.LLM.LLMConfig;
 
 import cnsa.demo.domain.Message;
 import cnsa.demo.domain.Workspace;
 import cnsa.demo.repository.MessageRepository;
 import cnsa.demo.service.message.IMessageService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
@@ -22,6 +25,7 @@ public abstract class LLMService implements ILLMService {
 
     private final IMessageService messageService;
     private final MessageRepository messageRepository;
+    private final HttpSession httpSession;
     @Override
     public SseEmitter streamMessages(Workspace workspace) {
         SseEmitter emitter = new SseEmitter();
@@ -72,7 +76,7 @@ public abstract class LLMService implements ILLMService {
 
     @Override
     public List<GlobalMessageDTO> getLLMInputs() {
-        List<Message> messages = messageRepository.findTop10ByOrderByCreatedAtDesc();
+        List<Message> messages = messageRepository.findTop10ByWorkspaceOrderByCreatedAtDesc((Workspace) httpSession.getAttribute("workspace"));
         if(messages == null) throw new RuntimeException("The Messages is Null");
         if(messages.isEmpty()) throw new RuntimeException("User input is not saved");
 
@@ -80,7 +84,7 @@ public abstract class LLMService implements ILLMService {
 
         parsedDatas.add(GlobalMessageDTO.builder()
                 .createdAt(messages.get(0).getCreatedAt())
-                .content("You are a generative AI that looks at a list of recent conversations between you and the user and answers the user's most recent questions. The role of the sentence you created is assistant, and the role of the sentence created by the user is user. Also, the delivered messages array is sorted in chronological order, and you only need to respond to the last message in the array. When responding to the last message, refer to the previous conversation list if necessary.")
+                .content(GPT4oSystem.SYSTEM_PROMPT)
                 .role("system")
                 .workspace(messages.get(0).getWorkspace())
                 .build()
