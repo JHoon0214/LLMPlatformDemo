@@ -37,9 +37,9 @@ public class workspaceController {
     }
 
     @PostMapping("/creation")
-    public ResponseEntity<Long> createWorkspace() {
+    public ResponseEntity<Long> createWorkspace(@RequestParam Long llmModelId) {
         SessionUser user = (SessionUser) httpSession.getAttribute("user");
-        return ResponseEntity.ok(workspaceService.createWorkspace(user.getEmail()));
+        return ResponseEntity.ok(workspaceService.createWorkspace(user.getEmail(), llmModelId));
     }
 
     @GetMapping("/{id}")

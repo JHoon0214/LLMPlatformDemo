@@ -1,10 +1,15 @@
 package cnsa.demo.service.workspace;
 
+import cnsa.demo.DTO.LLMModelDTO;
 import cnsa.demo.DTO.workspaceDTO.WorkspaceDTO;
+import cnsa.demo.domain.LLMModel;
 import cnsa.demo.domain.User;
 import cnsa.demo.domain.Workspace;
+import cnsa.demo.repository.LLMModelRepository;
 import cnsa.demo.repository.UserRepository;
 import cnsa.demo.repository.WorkspaceRepository;
+import cnsa.demo.service.llm.LLMModelService;
+import cnsa.demo.service.llm.LLMService;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.jdbc.Work;
 import org.springframework.stereotype.Service;
@@ -19,16 +24,21 @@ import java.util.Optional;
 public class WorkspaceService {
     private final WorkspaceRepository workspaceRepository;
     private final UserRepository userRepository;
+    private final LLMModelRepository llmModelRepository;
 
-    public Long createWorkspace(String userEmail) {
+    public Long createWorkspace(String userEmail, Long llmId) {
         Optional<User> byEmail = userRepository.findByEmail(userEmail);
         if(byEmail.isEmpty()) throw new RuntimeException("Error on WorkspaceServiceClass-createWorkspace(). There is no user with email " + userEmail);
+
+        Optional<LLMModel> byModelId = llmModelRepository.findByModelId(llmId);
+        if(byModelId.isEmpty()) throw new RuntimeException("There is no model with id " + llmId);
+
         return workspaceRepository.save(Workspace.builder()
                 .workspaceName("New Chat")
                 .createdAt(LocalDateTime.now())
                 .user(byEmail.get())
                 .editedAt(LocalDateTime.now())
-
+                .llmModel(byModelId.get())
                 .build()
         ).getId();
     }

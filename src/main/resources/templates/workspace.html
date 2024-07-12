@@ -1,26 +1,598 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+<html>
 <head>
-    <title>Workspace List</title>
+    <title>Miir - AI Chat</title>
 </head>
-<body>
-<h1>Workspace List</h1>
-<ul>
-    <li th:each="workspace : ${workspaces}">
-        <a th:text="${workspace.workspaceName}" th:href="@{'/workspace/' + ${workspace.id}}"></a>
-    </li>
-</ul>
-<button onclick="createWorkspace()">+ Add Workspace</button>
-
 <script>
-    function createWorkspace() {
-        fetch('/workspace/creation', {
-            method: 'POST'
-        }).then(response => response.json())
-            .then(data => {
-                window.location.reload();
+    document.addEventListener('DOMContentLoaded', function() {
+        const serviceMessage = document.getElementById('service-message');
+        const serviceItems = document.querySelectorAll('.service-select-box > div');
+
+        serviceItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const serviceName = this.querySelector('.service-name').textContent;
+
+                // 텍스트 변경 및 애니메이션 적용
+                serviceMessage.textContent = serviceName;
+                serviceMessage.classList.add('selected');
+
+                // 서비스 선택 박스 숨기기
+                document.querySelector('.service-description').style.display = '';
+                document.querySelector('.service-price').style.display = '';
+                document.querySelector('.search-box').style.display = '';
+                document.querySelector('.search-box-spacer').style.display = 'none';
             });
-    }
+        });
+    });
+
+    // document.addEventListener('DOMContentLoaded', function() {
+    //     const textarea = document.getElementById('search-box');
+
+    //     textarea.addEventListener('input', function() {
+    //         this.style.height = 'auto';
+    //         this.style.height = (this.scrollHeight) + 'px';
+    //     });
+    // });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const editableDiv = document.getElementById('search-box');
+
+        /* editableDiv.addEventListener('input', function() {
+            // 최대 높이를 초과하지 않도록 조정
+            if (this.offsetHeight < this.scrollHeight) {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            }
+        });*/
+
+        // Enter 키 처리
+        editableDiv.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                // 여기에 메시지 전송 로직 추가
+                console.log('Message sent:', this.innerText);
+                this.innerText = ''; // 입력 필드 비우기
+            }
+        });
+    });
 </script>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+    }
+
+    .sidebar {
+        width: 300px;
+        height: 100vh;
+        background: #FDFDFD;
+        border-right: 1px solid #ECECEC;
+        position: fixed;
+        left: -300px;
+        transition: left 0.3s ease-in-out;
+        left: 0;
+    }
+
+    .sidebar-content {
+        padding: 20px;
+    }
+
+    .sidebar-header {
+        height: 46px;
+        border-bottom: 1px solid #ECECEC;
+        display: flex;
+        justify-content: space-between;
+        flex-direction: row;
+        align-items: center;
+        padding: 0 20px;
+    }
+
+    .sidebar-header > .logo {
+        color: #000;
+        font-family: Inter;
+        font-size: 18px;
+        font-style: normal;
+        font-weight: 700;
+        line-height: normal;
+        cursor: pointer;
+    }
+
+    .sidebar-header > .new-button {
+        cursor: pointer;
+    }
+
+    .sidebar-content > .chat-section {
+        margin-bottom: 30px;
+    }
+
+    .chat-section > .chat-date {
+        color: #4e4e4e;
+        font-family: Inter;
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: normal;
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+
+    .chat-row {
+        display: flex;
+        align-items: center;
+        margin-top: 10px;
+        align-content: space-around;
+        justify-content: flex-start;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .chat-row:hover {
+        background: #f5f5f5;
+    }
+
+    .chat-row > img {
+        width: 35px;
+        height: 35px;
+    }
+
+    .chat-row > div {
+        margin-left: 10px;
+    }
+
+    .chat-row > div > .service-name {
+        color: #808080;
+        font-family: Inter;
+        font-size: 10px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: normal;
+        padding-top: 2px;
+        padding-bottom: 4px;
+    }
+
+    .chat-row > div > .chat-title {
+        color: #000;
+        font-family: Inter;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: normal;
+    }
+
+    .main-container {
+        margin-left: 300px;
+        padding: 20px;
+        display: flex;
+        position: fixed;
+        top: 0px;
+        bottom: 0px;
+        right: 0px;
+        left: 0px;
+        justify-content: space-between;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    .main-container > .container > .main-title {
+        color: #000;
+        font-family: Inter;
+        font-size: 18px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: normal;
+        margin-bottom: 15px;
+    }
+
+    .main-container > .container {
+        display: flex;
+        flex-direction: column;
+        align-content: center;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .service-select-box {
+        width: 330px;
+        height: 335px;
+        flex-shrink: 0;
+        border-radius: 15px;
+        border: 1px solid #D0D0D0;
+        background: #FFF;
+        box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.10);
+        overflow-y: auto;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    .service-select-box > div {
+        padding-left: 20px;
+        padding-right: 20px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        flex-direction: row;
+        cursor: pointer;
+    }
+
+    .service-select-box > div > img {
+        width: 20px;
+        height: 20px;
+        border-radius: 5px;
+        margin-right: 10px;
+    }
+
+    .service-name {
+        color: #000;
+        font-family: Inter;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: normal;
+        margin-top: 4px;
+    }
+
+    .headerbar {
+        position: fixed;
+        top: 0;
+        left: 300px;
+        right: 0;
+        height: 46px;
+        background: rgba(253, 253, 253, 0.10);
+        backdrop-filter: blur(5px);
+        border-bottom: 1px solid #ECECEC;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        padding: 0 20px;
+    }
+
+    .headerbar > p {
+        color: #000;
+        font-family: Inter;
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: normal;
+    }
+
+    /*.search-box {
+        display: flex;
+        width: 60%;
+        height: 40px;
+        flex-shrink: 0;
+        border-radius: 33px;
+        border: 1px solid #E0E0E0;
+        background: #FAFAFA;
+        box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.10);
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        align-content: center;
+        padding-left: 20px;
+        padding-right: 10px;
+    }*/
+
+    /* .search-box {
+        display: flex;
+        width: 60%;
+        min-height: 40px;
+        max-height: 200px;
+        flex-shrink: 0;
+        border-radius: 33px;
+        border: 1px solid #E0E0E0;
+        background: #FAFAFA;
+        box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.10);
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+        align-content: center;
+        padding: 0 20px;
+        overflow: hidden;
+        align-items: center;
+    }*/
+
+    .search-box {
+        display: flex;
+        width: 60%;
+        min-height: 40px;
+        max-height: 200px;
+        flex-shrink: 0;
+        border-radius: 33px;
+        border: 1px solid #E0E0E0;
+        background: #FAFAFA;
+        box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.10);
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        align-content: center;
+        padding: 0 20px;
+        overflow: hidden;
+    }
+
+    .search-input-text {
+        width: 100%;
+        min-height: 20px;
+        max-height: 180px;
+        background: none;
+        color: #000;
+        font-family: Inter;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 20px;
+        outline: none;
+        overflow-y: auto;
+        word-wrap: break-word;
+        padding: 10px;
+    }
+
+    .search-input-text[contenteditable]:empty::before {
+        content: attr(data-placeholder);
+        color: #8A8A8A;
+    }
+
+    .search-input-text:focus {
+        outline: none;
+    }
+
+    #service-message {
+        color: #000;
+        font-family: Inter, sans-serif;
+        font-size: 18px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: normal;
+        transition: all 0.3s ease;
+    }
+
+    #service-message.selected {
+        color: #000;
+        font-size: 30px;
+        font-weight: 700;
+        transform: scale(1.1);
+    }
+
+    .service-select-box > div {
+        /* 기존 스타일 유지 */
+        transition: background-color 0.3s ease;
+    }
+
+    .service-select-box > div:hover {
+        background-color: #f0f0f0;
+    }
+
+    .service-description {
+        color: #000;
+        text-align: center;
+        font-family: Inter;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: normal;
+        width: 562px;
+        margin-bottom: 20px;
+    }
+
+    .service-price {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        align-content: center;
+    }
+
+    .service-price > a {
+        color: #828282;
+        font-family: Inter;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: normal;
+        margin-left: 7px;
+    }
+
+    /*.search-input-text {
+        border: none;
+        width: 100%;
+        background: none;
+        color: #8A8A8A;
+        font-family: Inter;
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: normal;
+    }*/
+
+    /* .search-input-text {
+        border: 1px solid #f00;
+        width: 100%;
+        background: none;
+        color: #8A8A8A;
+        font-family: Inter;
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: normal;
+        resize: none;
+        overflow-y: auto;
+        height: 20px;
+        min-height: 20px;
+        max-height: 180px;
+        align-self: center;
+    }*/
+
+    .search-input-text {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        box-sizing: border-box;
+    }
+
+    .search-input-text:focus {
+        outline: none;
+        box-shadow: none;
+        background-color: transparent;
+    }
+
+    input[type="text"] {
+        /* 기본 스타일 */
+        outline: none;
+    }
+
+    .search-input-text[contenteditable]:empty::before {
+        content: attr(data-placeholder);
+        color: #8A8A8A;
+    }
+
+    input[type="text"]:focus {
+        border: none;
+        outline: none;
+        box-shadow: none;
+        /* 필요한 경우 배경색 변경 */
+        background-color: transparent;
+    }
+
+    input[type="text"]:focus {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+</style>
+<body>
+<div class="headerbar">
+    <div class="headerbar-content">
+        <div class="headerbar-left">
+            <p>Chat Title Here...</p>
+        </div>
+    </div>
+</div>
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="logo">Mirr</div>
+        <img class="new-button" src="./images/add_button.svg" width="18px" height="18px">
+    </div>
+    <div class="sidebar-content">
+        <div class="chat-section">
+            <div class="chat-date">2024. 7. 12.(금)</div>
+            <div>
+                <div class="chat-row">
+                    <img src="./images/claude.png">
+                    <div>
+                        <div class="service-name">Claude-3.5-Sonnet-200k</div>
+                        <div class="chat-title">Hoeun is Good Boy!</div>
+                    </div>
+                </div>
+
+                <div class="chat-row">
+                    <img src="./images/gpt.png">
+                    <div>
+                        <div class="service-name">GPT-4o-128k</div>
+                        <div class="chat-title">Hyunjoon Work more and more...</div>
+                    </div>
+                </div>
+
+                <div class="chat-row">
+                    <img src="./images/gemini.png">
+                    <div>
+                        <div class="service-name">Gemini-1.5-Pro</div>
+                        <div class="chat-title">Jaehoon do not go to sleep only...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-section">
+            <div class="chat-date">2024. 7. 11.(목)</div>
+            <div>
+                <div class="chat-row">
+                    <img src="./images/claude.png">
+                    <div>
+                        <div class="service-name">Claude-3.5-Sonnet-200k</div>
+                        <div class="chat-title">Hoeun is Good Boy!</div>
+                    </div>
+                </div>
+
+                <div class="chat-row">
+                    <img src="./images/gpt.png">
+                    <div>
+                        <div class="service-name">GPT-4o-128k</div>
+                        <div class="chat-title">Hyunjoon Work more and more...</div>
+                    </div>
+                </div>
+
+                <div class="chat-row">
+                    <img src="./images/gemini.png">
+                    <div>
+                        <div class="service-name">Gemini-1.5-Pro</div>
+                        <div class="chat-title">Jaehoon do not go to sleep only...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<div class="main-container">
+    <spacer></spacer>
+    <div class="container">
+        <div class="main-title" id="service-message">서비스를 선택해서 채팅을 시작하세요.</div>
+        <div class="service-price" style="display: none;">
+            <img src="./images/coin.svg" width="12px" height="12px">
+            <a>1,000 / 메시지</a>
+        </div>
+        <p class="service-description" style="display: none;">
+            OpenAI's most powerful model. Stronger than GPT-3.5 in quantitative questions (math and physics), creative writing, and many other challenging tasks. Powered by GPT-4o. Context window has been shortened to optimize for speed and cost. For longer context messages, please try GPT-4o-128k.
+        </p>
+        <div class="service-select-box">
+            <div>
+                <img src="./images/gpt.png">
+                <div class="service-name">GPT-4o</div>
+            </div>
+            <div>
+                <img src="./images/gpt.png">
+                <div class="service-name">GPT-4-Turbo</div>
+            </div>
+            <div>
+                <img src="./images/gpt.png">
+                <div class="service-name">GPT-3.5-Turbo</div>
+            </div>
+            <div>
+                <img src="./images/claude.png">
+                <div class="service-name">Claude-3.5-Sonnet</div>
+            </div>
+            <div>
+                <img src="./images/claude.png">
+                <div class="service-name">Claude-3.5</div>
+            </div>
+            <div>
+                <img src="./images/claude.png">
+                <div class="service-name">Claude-3.0-Sonnet</div>
+            </div>
+            <div>
+                <img src="./images/claude.png">
+                <div class="service-name">Claude-3.0</div>
+            </div>
+            <div>
+                <img src="./images/gemini.png">
+                <div class="service-name">Gemini-1.5-Pro</div>
+            </div>
+            <div>
+                <img src="./images/gemini.png">
+                <div class="service-name">Gemini-1.5-Flash</div>
+            </div>
+            <div>
+                <img src="./images/gemini.png">
+                <div class="service-name">Gemini-1.0-Pro</div>
+            </div>
+        </div>
+    </div>
+    <div class="search-box" style="display: none;">
+        <div id="search-box" class="search-input-text" contenteditable="true" data-placeholder="메시지를 입력하세요"></div>
+    </div>
+    <div class="search-box-spacer"></div>
+</div>
 </body>
 </html>
