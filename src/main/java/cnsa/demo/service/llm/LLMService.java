@@ -2,7 +2,6 @@ package cnsa.demo.service.llm;
 
 import cnsa.demo.DTO.messageDTO.GlobalMessageDTO;
 import cnsa.demo.config.LLM.GPT3_5System;
-import cnsa.demo.config.LLM.GPT4oSystem;
 import cnsa.demo.config.LLM.LLMConfig;
 
 import cnsa.demo.domain.Message;
@@ -84,7 +83,7 @@ public abstract class LLMService implements ILLMService {
 
         parsedDatas.add(GlobalMessageDTO.builder()
                 .createdAt(messages.get(0).getCreatedAt())
-                .content(GPT4oSystem.SYSTEM_PROMPT)
+                .content(GPT3_5System.SYSTEM_PROMPT)
                 .role("system")
                 .workspace(messages.get(0).getWorkspace())
                 .build()
