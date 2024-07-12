@@ -20,11 +20,12 @@ public class LLMModelDTO {
     private String responseNodeAt;
     private String resultTokenAt;
     private String imageUrl;
+    private Integer price;
 
     @Builder
     public LLMModelDTO(Long modelId, String modelName, String modelDesc, Integer maxToken, Boolean streamable,
                        Double temperature, String chatUrl, String responseNodeAt, String resultTokenAt,
-                       String imageUrl) {
+                       String imageUrl, Integer price) {
         this.modelId = modelId;
         this.modelName = modelName;
         this.modelDesc = modelDesc;
@@ -35,6 +36,7 @@ public class LLMModelDTO {
         this.responseNodeAt = responseNodeAt;
         this.resultTokenAt = resultTokenAt;
         this.imageUrl = imageUrl;
+        this.price = price;
     }
 
     public LLMModelDTO(LLMModel llmModel) {
@@ -48,5 +50,6 @@ public class LLMModelDTO {
         this.responseNodeAt = llmModel.getResponseNodeAt();
         this.resultTokenAt = llmModel.getResultTokenAt();
         this.imageUrl = llmModel.getImageUrl();
+        this.price = llmModel.getPrice();
     }
 }
