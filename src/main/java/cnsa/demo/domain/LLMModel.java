@@ -38,4 +38,7 @@ public class LLMModel {
 
     @Column(nullable = false)
     private String imageUrl;
+
+    @Column(nullable = false)
+    private Integer price;
 }
