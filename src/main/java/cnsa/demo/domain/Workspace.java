@@ -32,12 +32,17 @@ public class Workspace {
     @JoinColumn(name="user_id", nullable = false)
     private User user;
 
+    @ManyToOne
+    @JoinColumn(name="llm_model", nullable = false)
+    private LLMModel llmModel;
+
     @Builder
-    public Workspace(String workspaceName, LocalDateTime createdAt, LocalDateTime editedAt, User user) {
+    public Workspace(String workspaceName, LocalDateTime createdAt, LocalDateTime editedAt, User user, LLMModel llmModel) {
         this.workspaceName=workspaceName;
         this.createdAt=createdAt;
         this.editedAt=editedAt;
         this.user=user;
+        this.llmModel=llmModel;
     }
 
 }
