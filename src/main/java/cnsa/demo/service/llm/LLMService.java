@@ -8,6 +8,7 @@ import cnsa.demo.domain.Message;
 import cnsa.demo.domain.Workspace;
 import cnsa.demo.repository.MessageRepository;
 import cnsa.demo.service.message.IMessageService;
+import cnsa.demo.service.util.EscapeSequenceConverter;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -35,35 +36,27 @@ public abstract class LLMService implements ILLMService {
 
         Flux<String> eventStream = getResponse(inputMessages);
         StringBuilder llmResponse = new StringBuilder();
+        StringBuilder convertedResponse = new StringBuilder();
 
         eventStream.subscribe(
                 event -> {
                     try {
                         String content = extractContent(event);
-                        System.out.println("Received content: '" + content + "'");
-                        content = content.replaceAll("&", "&amp;");
-                        content = content.replaceAll(" ", "&nbsp;");
-                        content = content.replaceAll("<", "&lt;");
-                        content = content.replaceAll(">", "&gt;");
-                        content = content.replaceAll("\n", "<br>");
-                        content = content.replaceAll("\"", "&quot;");
-                        if (!content.isEmpty()) {
-                            if(llmResponse.isEmpty()) {
-                                System.out.println("starting : " + "'" + content + "'");
-                            }
-                            System.out.println("content");
-                            SseEmitter.SseEventBuilder eventBuilder = SseEmitter.event()
-                                    .data(content)
-                                    .name("message");
+                        String convertContent = EscapeSequenceConverter.makeConvert(content);
 
-                            System.out.println("Sending event: '" + content + "'");
+                        if (!convertContent.isEmpty()) {
+                            SseEmitter.SseEventBuilder eventBuilder = SseEmitter.event()
+                                    .data(convertContent)
+                                    .name("message");
 
                             emitter.send(eventBuilder);
                             llmResponse.append(content);
+                            convertedResponse.append(convertContent);
                         }
                     } catch (IOException e) {
                         messageService.saveMessage(GlobalMessageDTO.builder()
-                                .content(llmResponse.toString())
+                                .content(convertedResponse.toString())
+                                .keyContent(llmResponse.toString())
                                 .role(LLMConfig.ROLE_ASSISTANT)
                                 .createdAt(LocalDateTime.now())
                                 .workspace(workspace)
@@ -82,7 +75,8 @@ public abstract class LLMService implements ILLMService {
 
                         // Save the GPT response to the database
                         messageService.saveMessage(GlobalMessageDTO.builder()
-                                .content(llmResponse.toString())
+                                .content(convertedResponse.toString())
+                                .keyContent(llmResponse.toString())
                                 .role(LLMConfig.ROLE_ASSISTANT)
                                 .createdAt(LocalDateTime.now())
                                 .workspace(workspace)

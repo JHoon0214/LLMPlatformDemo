@@ -10,7 +10,7 @@ public class GPTMessageDTO implements IModelDTO{
     private String role;
     @Override
     public IModelDTO convertMessageToIModelMessage(GlobalMessageDTO messageDTO) {
-        this.content=messageDTO.getContent();
+        this.content=messageDTO.getKeyContent();
         this.role=messageDTO.getRole();
 
         return this;

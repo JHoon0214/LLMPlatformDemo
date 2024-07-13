@@ -30,6 +30,9 @@ public class IMessageServiceImpl implements IMessageService {
         newWorkspace.setEditedAt(LocalDateTime.now());
         workspaceRepository.save(newWorkspace);
 
+        System.out.println("content : " + messageDTO.getContent() + "\n");
+        System.out.println("key content : " + messageDTO.getKeyContent() + "\n");
+
         messageRepository.save(messageDTO.convertToMessage());
     }
 
