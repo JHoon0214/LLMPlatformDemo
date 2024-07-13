@@ -41,7 +41,12 @@ public abstract class LLMService implements ILLMService {
                     try {
                         String content = extractContent(event);
                         System.out.println("Received content: '" + content + "'");
+                        content = content.replaceAll("&", "&amp;");
                         content = content.replaceAll(" ", "&nbsp;");
+                        content = content.replaceAll("<", "&lt;");
+                        content = content.replaceAll(">", "&gt;");
+                        content = content.replaceAll("\n", "<br>");
+                        content = content.replaceAll("\"", "&quot;");
                         if (!content.isEmpty()) {
                             if(llmResponse.isEmpty()) {
                                 System.out.println("starting : " + "'" + content + "'");

@@ -83,7 +83,7 @@
             // console.log(message);
             // console.log(mElement);
             // console.log("----------");
-            message = message.replaceAll('&nbsp;', ' ');
+            // message = message.replaceAll('&nbsp;', ' ');
             mElement.getElementsByClassName('chat')[0].innerHTML += message;
 
             chat_container.scrollTop = chat_container.scrollHeight;
@@ -106,7 +106,7 @@
             new_chat_group.getElementsByClassName("system-chat-name")[0].innerText = selectedServiceName;
             new_chat_group.getElementsByClassName("system-chat-image")[0].src = '/img/' + selectedServiceImageUrl;
 
-            message = message.replaceAll('&nbsp;', ' ');
+            // message = message.replaceAll('&nbsp;', ' ');
             new_chat_group.getElementsByClassName('chat')[0].innerHTML = message;
             chat_container.appendChild(new_chat_group);
 
