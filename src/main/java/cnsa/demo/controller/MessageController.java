@@ -4,6 +4,7 @@ import cnsa.demo.DTO.messageDTO.GlobalMessageDTO;
 import cnsa.demo.config.LLM.LLMConfig;
 import cnsa.demo.domain.Workspace;
 import cnsa.demo.service.message.IMessageService;
+import cnsa.demo.service.util.EscapeSequenceConverter;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,7 @@ public class MessageController {
     @PostMapping("/send")
     public ResponseEntity<Void> sendMessage (@RequestBody Map<String, String> messageText) {
         messageService.saveMessage(GlobalMessageDTO.builder()
-                .content(messageText.get("text"))
+                .content(EscapeSequenceConverter.makeConvert(messageText.get("text")))
                 .keyContent(messageText.get("text"))
                 .role(LLMConfig.ROLE_USER)
                 .createdAt(LocalDateTime.now())

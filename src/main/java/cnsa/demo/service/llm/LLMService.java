@@ -8,6 +8,7 @@ import cnsa.demo.domain.Message;
 import cnsa.demo.domain.Workspace;
 import cnsa.demo.repository.MessageRepository;
 import cnsa.demo.service.message.IMessageService;
+import cnsa.demo.service.util.EscapeSequenceConverter;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -41,14 +42,8 @@ public abstract class LLMService implements ILLMService {
                 event -> {
                     try {
                         String content = extractContent(event);
+                        String convertContent = EscapeSequenceConverter.makeConvert(content);
 
-                        String convertContent = content;
-                        convertContent = convertContent.replaceAll("&", "&amp;");
-                        convertContent = convertContent.replaceAll(" ", "&nbsp;");
-                        convertContent = convertContent.replaceAll("<", "&lt;");
-                        convertContent = convertContent.replaceAll(">", "&gt;");
-                        convertContent = convertContent.replaceAll("\n", "<br>");
-                        convertContent = convertContent.replaceAll("\"", "&quot;");
                         if (!convertContent.isEmpty()) {
                             SseEmitter.SseEventBuilder eventBuilder = SseEmitter.event()
                                     .data(convertContent)
