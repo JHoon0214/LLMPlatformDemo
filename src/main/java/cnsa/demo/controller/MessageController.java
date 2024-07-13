@@ -30,6 +30,7 @@ public class MessageController {
     public ResponseEntity<Void> sendMessage (@RequestBody Map<String, String> messageText) {
         messageService.saveMessage(GlobalMessageDTO.builder()
                 .content(messageText.get("text"))
+                .keyContent(messageText.get("text"))
                 .role(LLMConfig.ROLE_USER)
                 .createdAt(LocalDateTime.now())
                 .workspace((Workspace)httpSession.getAttribute("workspace"))

@@ -62,7 +62,7 @@
         new_chat_group.innerHTML = chat_group;
 
         const new_chat_p = document.createElement('p');
-        new_chat_p.innerText = message;
+        new_chat_p.innerHTML = message;
         new_chat_group.getElementsByClassName('chat')[0].appendChild(new_chat_p);
 
         chat_container.appendChild(new_chat_group);

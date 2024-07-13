@@ -35,35 +35,33 @@ public abstract class LLMService implements ILLMService {
 
         Flux<String> eventStream = getResponse(inputMessages);
         StringBuilder llmResponse = new StringBuilder();
+        StringBuilder convertedResponse = new StringBuilder();
 
         eventStream.subscribe(
                 event -> {
                     try {
                         String content = extractContent(event);
-                        System.out.println("Received content: '" + content + "'");
-                        content = content.replaceAll("&", "&amp;");
-                        content = content.replaceAll(" ", "&nbsp;");
-                        content = content.replaceAll("<", "&lt;");
-                        content = content.replaceAll(">", "&gt;");
-                        content = content.replaceAll("\n", "<br>");
-                        content = content.replaceAll("\"", "&quot;");
-                        if (!content.isEmpty()) {
-                            if(llmResponse.isEmpty()) {
-                                System.out.println("starting : " + "'" + content + "'");
-                            }
-                            System.out.println("content");
-                            SseEmitter.SseEventBuilder eventBuilder = SseEmitter.event()
-                                    .data(content)
-                                    .name("message");
 
-                            System.out.println("Sending event: '" + content + "'");
+                        String convertContent = content;
+                        convertContent = convertContent.replaceAll("&", "&amp;");
+                        convertContent = convertContent.replaceAll(" ", "&nbsp;");
+                        convertContent = convertContent.replaceAll("<", "&lt;");
+                        convertContent = convertContent.replaceAll(">", "&gt;");
+                        convertContent = convertContent.replaceAll("\n", "<br>");
+                        convertContent = convertContent.replaceAll("\"", "&quot;");
+                        if (!convertContent.isEmpty()) {
+                            SseEmitter.SseEventBuilder eventBuilder = SseEmitter.event()
+                                    .data(convertContent)
+                                    .name("message");
 
                             emitter.send(eventBuilder);
                             llmResponse.append(content);
+                            convertedResponse.append(convertContent);
                         }
                     } catch (IOException e) {
                         messageService.saveMessage(GlobalMessageDTO.builder()
-                                .content(llmResponse.toString())
+                                .content(convertedResponse.toString())
+                                .keyContent(llmResponse.toString())
                                 .role(LLMConfig.ROLE_ASSISTANT)
                                 .createdAt(LocalDateTime.now())
                                 .workspace(workspace)
@@ -82,7 +80,8 @@ public abstract class LLMService implements ILLMService {
 
                         // Save the GPT response to the database
                         messageService.saveMessage(GlobalMessageDTO.builder()
-                                .content(llmResponse.toString())
+                                .content(convertedResponse.toString())
+                                .keyContent(llmResponse.toString())
                                 .role(LLMConfig.ROLE_ASSISTANT)
                                 .createdAt(LocalDateTime.now())
                                 .workspace(workspace)
