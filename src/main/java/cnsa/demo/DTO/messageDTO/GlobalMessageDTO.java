@@ -11,13 +11,15 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 public class GlobalMessageDTO {
+    private Long messageId;
     private String content;
     private String role;
     private Workspace workspace;
     private LocalDateTime createdAt;
 
     @Builder
-    public GlobalMessageDTO(String content, String role, Workspace workspace, LocalDateTime createdAt) {
+    public GlobalMessageDTO(Long messageId, String content, String role, Workspace workspace, LocalDateTime createdAt) {
+        this.messageId = messageId;
         this.content = content;
         this.role = role;
         this.workspace = workspace;
@@ -25,11 +27,12 @@ public class GlobalMessageDTO {
     }
 
     public GlobalMessageDTO(Message message) {
-        this(message.getContent(), message.getRole(), message.getWorkspace(), message.getCreatedAt());
+        this(message.getId(), message.getContent(), message.getRole(), message.getWorkspace(), message.getCreatedAt());
     }
 
     public Message convertToMessage() {
         Message message = new Message();
+        message.setId(messageId);
         message.setContent(content);
         message.setRole(role);
         message.setCreatedAt(createdAt);

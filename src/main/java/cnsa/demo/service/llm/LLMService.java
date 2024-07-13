@@ -14,9 +14,12 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -37,14 +40,30 @@ public abstract class LLMService implements ILLMService {
                 event -> {
                     try {
                         String content = extractContent(event);
+                        System.out.println("Received content: '" + content + "'");
+                        content = content.replaceAll(" ", "&nbsp;");
                         if (!content.isEmpty()) {
+                            if(llmResponse.isEmpty()) {
+                                System.out.println("starting : " + "'" + content + "'");
+                            }
+                            System.out.println("content");
                             SseEmitter.SseEventBuilder eventBuilder = SseEmitter.event()
                                     .data(content)
                                     .name("message");
+
+                            System.out.println("Sending event: '" + content + "'");
+
                             emitter.send(eventBuilder);
                             llmResponse.append(content);
                         }
                     } catch (IOException e) {
+                        messageService.saveMessage(GlobalMessageDTO.builder()
+                                .content(llmResponse.toString())
+                                .role(LLMConfig.ROLE_ASSISTANT)
+                                .createdAt(LocalDateTime.now())
+                                .workspace(workspace)
+                                .build()
+                        );
                         emitter.completeWithError(e);
                     }
                 },
@@ -99,5 +118,6 @@ public abstract class LLMService implements ILLMService {
     public abstract Flux<String> getResponse(List<GlobalMessageDTO> conversations);
 
     @Override
+
     public abstract String extractContent(String jsonEvent);
 }

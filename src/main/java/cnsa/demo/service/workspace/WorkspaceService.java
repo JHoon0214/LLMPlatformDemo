@@ -1,6 +1,7 @@
 package cnsa.demo.service.workspace;
 
 import cnsa.demo.DTO.LLMModelDTO;
+import cnsa.demo.DTO.workspaceDTO.WorkSpaceWithDateDTO;
 import cnsa.demo.DTO.workspaceDTO.WorkspaceDTO;
 import cnsa.demo.domain.LLMModel;
 import cnsa.demo.domain.User;
@@ -11,13 +12,12 @@ import cnsa.demo.repository.WorkspaceRepository;
 import cnsa.demo.service.llm.LLMModelService;
 import cnsa.demo.service.llm.LLMService;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.bytecode.internal.bytebuddy.BytecodeProviderImpl;
 import org.hibernate.jdbc.Work;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -43,18 +43,48 @@ public class WorkspaceService {
         ).getId();
     }
 
-    public List<WorkspaceDTO> getWorkspaces(String userEmail) {
+    public List<WorkSpaceWithDateDTO> getWorkspaces(String userEmail) {
         Optional<User> byEmail = userRepository.findByEmail(userEmail);
-        if(byEmail.isEmpty()) throw new RuntimeException("Error on WorkspaceServiceClass-getWorkspaces(). There is no user with email " + userEmail);
 
-        Optional<List<Workspace>> orderedWorkspaces = workspaceRepository.findAllByUserOrderByEditedAt(byEmail.get());
-        if(orderedWorkspaces.isEmpty()) return new ArrayList<WorkspaceDTO>();
+        if (byEmail.isEmpty()) {
+            throw new RuntimeException("Error on WorkspaceServiceClass-getWorkspaces(). There is no user with email " + userEmail);
+        }
 
-        List<WorkspaceDTO> workspaces = new ArrayList<WorkspaceDTO>();
-        for(Workspace workspace:orderedWorkspaces.get()) {
+        Optional<List<Workspace>> orderedWorkspaces = workspaceRepository.findAllByUserOrderByEditedAtDesc(byEmail.get());
+        if (orderedWorkspaces.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        LocalDateTime curr = null;
+        List<WorkspaceDTO> workspaces = new ArrayList<>();
+
+        List<WorkSpaceWithDateDTO> retList = new ArrayList<>();
+
+        for (Workspace workspace : orderedWorkspaces.get()) {
+            if (curr == null || !curr.toLocalDate().equals(workspace.getEditedAt().toLocalDate())) {
+                if (curr != null) {
+                    WorkSpaceWithDateDTO workSpaceWithDateDTO = WorkSpaceWithDateDTO.builder()
+                            .localDate(curr.toLocalDate())
+                            .workspaceDTOS(workspaces)
+                            .build();
+                    retList.add(workSpaceWithDateDTO);
+                }
+                curr = workspace.getEditedAt();
+                workspaces = new ArrayList<>();
+            }
             workspaces.add(new WorkspaceDTO(workspace));
         }
-        return workspaces;
+
+        // 마지막 작업공간 리스트 추가
+        if (!workspaces.isEmpty()) {
+            WorkSpaceWithDateDTO workSpaceWithDateDTO = WorkSpaceWithDateDTO.builder()
+                    .localDate(curr.toLocalDate())
+                    .workspaceDTOS(workspaces)
+                    .build();
+            retList.add(workSpaceWithDateDTO);
+        }
+
+        return retList;
     }
 
     public Workspace getWorkspace(Long workspaceId) {
