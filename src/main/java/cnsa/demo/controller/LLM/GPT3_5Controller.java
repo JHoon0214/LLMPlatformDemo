@@ -1,5 +1,6 @@
 package cnsa.demo.controller.LLM;
 
+import cnsa.demo.DTO.Security.SessionUser;
 import cnsa.demo.domain.Workspace;
 import cnsa.demo.service.llm.ILLMService;
 import jakarta.servlet.http.HttpSession;
@@ -23,6 +24,7 @@ public class GPT3_5Controller implements ILLMController{
     @GetMapping("/stream")
     public SseEmitter streamMessages() {
         Workspace workspace = (Workspace) httpSession.getAttribute("workspace");
+        //if(workspace.getUser().getId().equals(((SessionUser)httpSession.getAttribute("user")).get))
         return illmService.streamMessages(workspace);
     }
 }

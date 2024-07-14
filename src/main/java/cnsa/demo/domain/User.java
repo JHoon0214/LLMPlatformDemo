@@ -23,6 +23,7 @@ public class User {
     private String email;
 
     @NotNull
+    @Column(columnDefinition = "TEXT")
     private String picture;
 
     @Enumerated(EnumType.STRING)
