@@ -20,6 +20,8 @@
     let isPrinting = false;
     let eventSource = null;
 
+    let chat_id_count = 0;
+
     document.addEventListener('DOMContentLoaded', function() {
         const serviceMessage = document.getElementById('service-message');
         const serviceItems = document.querySelectorAll('.service-select-box > div');
@@ -65,6 +67,11 @@
         new_chat_p.innerHTML = message;
         new_chat_group.getElementsByClassName('chat')[0].appendChild(new_chat_p);
 
+        new_chat_group.getElementsByClassName('chat')[0].setAttribute('id', 'chat-' + chat_id_count);
+        new_chat_group.getElementsByClassName('chat-button')[0].setAttribute('onclick', "copyText(" + chat_id_count + ");");
+        new_chat_group.getElementsByClassName('chat-button')[0].setAttribute('id', 'copy-button-' + chat_id_count);
+        chat_id_count = chat_id_count + 1;
+
         chat_container.appendChild(new_chat_group);
 
         chat_container.scrollTop = chat_container.scrollHeight;
@@ -108,6 +115,12 @@
 
             // message = message.replaceAll('&nbsp;', ' ');
             new_chat_group.getElementsByClassName('chat')[0].innerHTML = message;
+
+            new_chat_group.getElementsByClassName('chat')[0].setAttribute('id', 'chat-' + chat_id_count);
+            new_chat_group.getElementsByClassName('chat-button')[0].setAttribute('onclick', "copyText(" + chat_id_count + ");");
+            new_chat_group.getElementsByClassName('chat-button')[0].setAttribute('id', 'copy-button-' + chat_id_count);
+            chat_id_count = chat_id_count + 1;
+
             chat_container.appendChild(new_chat_group);
 
             chat_container.scrollTop = chat_container.scrollHeight;
@@ -120,6 +133,18 @@
 
     }
 
+    function search_button_click() {
+        if (isPrinting) {
+            // stop
+            eventSource.close();
+            isPrinting = false;
+            document.getElementById('search-button').setAttribute('src', '/img/enter.svg');
+        } else {
+            // send
+            enter_message();
+        }
+    }
+
     let messageElement = null;
 
     function sendMessageToGpt4o() {
@@ -127,6 +152,7 @@
         const message = messageInput.innerText.trim();
         // console.log("message: " + message);
         isPrinting = true;
+        document.getElementById('search-button').setAttribute('src', '/img/stop.svg');
 
         if (message) {
             appendMessageUser(message);
@@ -143,9 +169,10 @@
                 eventSource = new EventSource('/chat/gpt4o/stream');
 
                 eventSource.onmessage = function(event) {
+                    let message = event.data; // .replaceAll('&nbsp;', ' ');
                     // console.log("message added:" + event.data);
                     // receivedMessageElement = appendMessage(event.data, 'received', receivedMessageElement);
-                    messageElement = appendMessageSystem(event.data, messageElement);
+                    messageElement = appendMessageSystem(message, messageElement);
                     // console.log(event.data);
                 };
 
@@ -156,6 +183,7 @@
                     // console.log(event.data);
                     eventSource.close();
                     isPrinting = false;
+                    document.getElementById('search-button').setAttribute('src', '/img/enter.svg');
                 });
             }).catch(error => console.error('Error:', error));
 
@@ -164,50 +192,54 @@
         }
     }
 
+    function enter_message() {
+        if (selectedServiceID === -1) return;
+        if (isPrinting) return;
+
+        console.log("workspaceId: ");
+        console.log(selectedWorkspaceId);
+
+        // workspace 선택 안됨 -> 새로 생성
+        if (selectedWorkspaceId < 0) {
+            e.preventDefault();
+            fetch('/workspace/creation?llmModelId=' + selectedServiceID, {
+                method: 'POST'
+            }).then(response => {
+                return response.json();
+            })
+                .then(workspaceId => {
+                    // window.location.reload();
+                    // TODO: API 호출
+                    console.log(workspaceId);
+                    selectedWorkspaceId = workspaceId;
+                    fetch('/workspace/' + workspaceId, {
+                        method: 'GET'
+                    }).then(response => {
+                    })
+                        .then(data => {
+                            document.getElementById('chat-container').style.display = '';
+                            document.getElementById('selection-container').style.display = 'none';
+                            sendMessageToGpt4o();
+                            refreshSidebar();
+                        })
+                });
+        } else {
+            sendMessageToGpt4o();
+            refreshSidebar();
+        }
+
+        console.log('Message sent:', this.innerText);
+        // this.innerText = ''; // 입력 필드 비우기
+        enter_message();
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         const editableDiv = document.getElementById('search-box');
 
         // Enter 키 처리
         editableDiv.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
-
-                if (selectedServiceID === -1) return;
-                if (isPrinting) return;
-
-                console.log("workspaceId: ");
-                console.log(selectedWorkspaceId);
-
-                // workspace 선택 안됨 -> 새로 생성
-                if (selectedWorkspaceId < 0) {
-                    e.preventDefault();
-                    fetch('/workspace/creation?llmModelId=' + selectedServiceID, {
-                        method: 'POST'
-                    }).then(response => {
-                        return response.json();
-                    })
-                        .then(workspaceId => {
-                            // window.location.reload();
-                            // TODO: API 호출
-                            console.log(workspaceId);
-                            selectedWorkspaceId = workspaceId;
-                            fetch('/workspace/' + workspaceId, {
-                                method: 'GET'
-                            }).then(response => {
-                            })
-                                .then(data => {
-                                    document.getElementById('chat-container').style.display = '';
-                                    document.getElementById('selection-container').style.display = 'none';
-                                    sendMessageToGpt4o();
-                                    refreshSidebar();
-                                })
-                        });
-                } else {
-                    sendMessageToGpt4o();
-                    refreshSidebar();
-                }
-
-                console.log('Message sent:', this.innerText);
-                // this.innerText = ''; // 입력 필드 비우기
+                enter_message();
             }
         });
     });
@@ -216,7 +248,6 @@
         // console.log(description)
         document.getElementById("service-description").innerText = description;
         document.getElementById("model-price").innerText = pricing + " / 메시지";
-
     }
 
     function changeSelectedID(serviceID, serviceImageUrl, serviceName) {
@@ -230,6 +261,8 @@
         const chat_container = document.getElementById('chat-container');
         chat_container.innerHTML = '';
 
+        document.getElementById('search-button').setAttribute('src', '/img/enter.svg');
+
         let spacer = document.createElement('div');
         spacer.style.width = '100vh';
         chat_container.appendChild(spacer);
@@ -242,6 +275,9 @@
             method: 'GET'
         }).then(response => {})
             .then(data => {
+                // reset chat count
+                chat_id_count = 0;
+
                 document.getElementById('chat-container').style.display = '';
                 document.getElementById('selection-container').style.display = 'none';
                 document.querySelector('.search-box').style.display = '';
@@ -290,6 +326,85 @@
                 document.querySelector('.sidebar-content').outerHTML = html;
             })
             .catch(error => console.error('Error:', error));
+    }
+
+    function refreshChat() {
+        fetch('/chat/refreshedChat')
+            .then(response => response.text())
+            .then(html => {
+                document.querySelector('.chat-container').outerHTML = html;
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    async function copyText(id) {
+        const output = document.getElementById('chat-' + id).textContent;
+
+        if (output === '') {
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(output);
+            const copyButton = document.getElementById('copy-button-' + id).getElementsByTagName('a')[0];
+            copyButton.text = '완료';
+
+            setTimeout(() => {
+                copyButton.text = '복사';
+            }, 1000);
+        } catch (err) {
+            console.log('fail to copy');
+        }
+    }
+
+    document.getElementById('search-box').addEventListener('paste', function (e) {
+        e.preventDefault();
+        let text = e.clipboardData.getData('text/plain');
+        document.execCommand('insertText', false, text);
+    });
+
+    document.getElementById('search-box').addEventListener('input', function() {
+        this.innerHTML = this.innerText; // This removes any formatting
+    });
+
+    document.getElementById('search-box').addEventListener('drop', function (e) {
+        e.preventDefault();
+    });
+
+    function toggleEditable(isEditable) {
+        const element = document.getElementById('search-box');
+
+        if (isEditable) {
+            element.setAttribute('contenteditable', 'true');
+            // element.style.backgroundColor = '#ffffff';
+        } else {
+            element.setAttribute('contenteditable', 'false');
+            // element.style.backgroundColor = '#f0f0f0';
+        }
+
+        if (isEditable) {
+            element.addEventListener('paste', handlePaste);
+            element.addEventListener('input', handleInput);
+            element.addEventListener('drop', handleDrop);
+        } else {
+            element.removeEventListener('paste', handlePaste);
+            element.removeEventListener('input', handleInput);
+            element.removeEventListener('drop', handleDrop);
+        }
+    }
+
+    function handlePaste(e) {
+        e.preventDefault();
+        let text = e.clipboardData.getData('text/plain');
+        document.execCommand('insertText', false, text);
+    }
+
+    function handleInput() {
+        this.innerHTML = this.innerText;
+    }
+
+    function handleDrop(e) {
+        e.preventDefault();
     }
 
 </script>
@@ -343,13 +458,13 @@
 
     <div class="chat-container" style="display: none;" id="chat-container">
         <div style="width: 100vh;"></div>
-        <!-- <div class="chat-group user">
+        <div class="chat-group" th:each="message:${messages}" style="border: 1px solid #000;">
             <div class="chat-header">
-                <a>[[${user.name}]]</a>
-                <img alt="" th:src="@{{image}(image=${user.picture})}">
+                <img class="system-chat-image" alt="" th:src="@{/img/{image}(image=${message.image})}">
+                <a class="system-chat-name">[[${message.name}]]</a>
             </div>
             <div class="chat">
-                <p>Please write a C++ code to merge sort a list</p>
+                <p>[[${message.content}]]</p>
             </div>
             <div class="chat-footer">
                 <div class="chat-button">
@@ -366,69 +481,11 @@
                 </div>
             </div>
         </div>
-
-        <div class="chat-group system">
-            <div class="chat-header">
-                <img id="model-image" alt="" src="">
-                <a id="model-name"></a>
-            </div>
-            <div class="chat">
-                <p>Here's the C++ code translated to C++17</p>
-                <div class="code-box">
-                    <div class="code-box-header">
-                        <p>C++</p>
-                        <div class="code-copy-button">
-                            <img alt="" src="/img/code_copy.svg" width="11px" height="11px">
-                            <a>복사</a>
-                        </div>
-                    </div>
-                    <pre><code class="language-cpp">
-#include &lt;iostream&gt;
-#include &lt;vector&gt;
-#include &lt;algorithm&gt;
-#include &lt;climits&gt;
-
-int main() {
-    std::ios_base::sync_with_stdio(false);
-    std::cin.tie(NULL);
-    int T;
-    std::cin &gt;&gt; T;
-    for (int test_case = 0; test_case &lt; T; ++test_case) {
-        int N;
-        std::cin &gt;&gt; N;
-        std::vector&lt;int&gt; arr(1500001, 0);
-        int num_iter = N / 4;
-        int minimum_count = 0;
-    }
-
-    return 0;
-}
-                        </code></pre>
-                </div>
-
-                <p>This translation maintains the structure and logic of the Python code while adapting it to C++17 syntax and conventions. Note that some parts, like printing the arr vector, have been omitted for brevity. You may want to add those back in if needed for debugging purposes.</p>
-                <br/>
-                <p>Also, I've added the necessary Case # output as specified in the problem statement. Make sure to adjust any other parts of the code if needed to fully comply with the problem requirements.</p>
-            </div>
-            <div class="chat-footer">
-                <div class="chat-button">
-                    <img alt="" src="/img/copy.svg" width="10px" height="12px">
-                    <a class="single-line">복사</a>
-                </div>
-                <div class="chat-button">
-                    <img alt="" src="/img/delete.svg" width="12px" height="12px">
-                    <a class="single-line">삭제</a>
-                </div>
-                <div class="chat-button">
-                    <img alt="" src="/img/branch.svg" width="10px" height="12px">
-                    <a class="single-line">분기</a>
-                </div>
-            </div>
-        </div> -->
     </div>
 
     <div class="search-box" style="display: none;">
         <div id="search-box" class="search-input-text" contenteditable="true" data-placeholder="메시지를 입력하세요"></div>
+        <img id="search-button" src="/img/enter.svg" width="26px" height="26px" alt="" onclick="search_button_click();">
     </div>
     <div class="search-box-spacer"></div>
 </div>
