@@ -1,14 +1,13 @@
 package cnsa.demo.service.llm;
 
 import cnsa.demo.DTO.messageDTO.GlobalMessageDTO;
-import cnsa.demo.config.LLM.GPT3_5System;
 import cnsa.demo.config.LLM.LLMConfig;
 
 import cnsa.demo.domain.Message;
 import cnsa.demo.domain.Workspace;
 import cnsa.demo.repository.MessageRepository;
 import cnsa.demo.service.message.IMessageService;
-import cnsa.demo.service.util.EscapeSequenceConverter;
+import cnsa.demo.service.util.HtmlSymbolConverter;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -36,27 +35,24 @@ public abstract class LLMService implements ILLMService {
 
         Flux<String> eventStream = getResponse(inputMessages);
         StringBuilder llmResponse = new StringBuilder();
-        StringBuilder convertedResponse = new StringBuilder();
 
         eventStream.subscribe(
                 event -> {
                     try {
                         String content = extractContent(event);
-                        String convertContent = EscapeSequenceConverter.makeConvert(content);
+                        content = HtmlSymbolConverter.getConverted(content);
 
-                        if (!convertContent.isEmpty()) {
+                        if (!content.isEmpty()) {
                             SseEmitter.SseEventBuilder eventBuilder = SseEmitter.event()
-                                    .data(convertContent)
+                                    .data(content)
                                     .name("message");
 
                             emitter.send(eventBuilder);
                             llmResponse.append(content);
-                            convertedResponse.append(convertContent);
                         }
                     } catch (IOException e) {
                         messageService.saveMessage(GlobalMessageDTO.builder()
-                                .content(convertedResponse.toString())
-                                .keyContent(llmResponse.toString())
+                                .content(llmResponse.toString())
                                 .role(LLMConfig.ROLE_ASSISTANT)
                                 .createdAt(LocalDateTime.now())
                                 .workspace(workspace)
@@ -75,8 +71,7 @@ public abstract class LLMService implements ILLMService {
 
                         // Save the GPT response to the database
                         messageService.saveMessage(GlobalMessageDTO.builder()
-                                .content(convertedResponse.toString())
-                                .keyContent(llmResponse.toString())
+                                .content(llmResponse.toString())
                                 .role(LLMConfig.ROLE_ASSISTANT)
                                 .createdAt(LocalDateTime.now())
                                 .workspace(workspace)
@@ -101,7 +96,7 @@ public abstract class LLMService implements ILLMService {
 
         parsedDatas.add(GlobalMessageDTO.builder()
                 .createdAt(messages.get(0).getCreatedAt())
-                .content(GPT3_5System.SYSTEM_PROMPT)
+                .content("make response of user input")
                 .role("system")
                 .workspace(messages.get(0).getWorkspace())
                 .build()

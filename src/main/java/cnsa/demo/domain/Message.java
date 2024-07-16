@@ -17,9 +17,6 @@ public class Message {
     @Column(nullable = false, columnDefinition = "LONGTEXT")
     private String content;
 
-    @Column(nullable = false, columnDefinition = "LONGTEXT")
-    private String keyContent;
-
     @Column(nullable = false)
     private String role;
 

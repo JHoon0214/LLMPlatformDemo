@@ -1,8 +1,8 @@
 package cnsa.demo.service.util;
 
-public class EscapeSequenceConverter {
-    public static String makeConvert(String content) {
-        String convertContent = content;
+public class HtmlSymbolConverter {
+    public static String getConverted(String input) {
+        String convertContent = input;
         convertContent = convertContent.replaceAll("&", "&amp;");
         convertContent = convertContent.replaceAll(" ", "&nbsp;");
         convertContent = convertContent.replaceAll("<", "&lt;");
