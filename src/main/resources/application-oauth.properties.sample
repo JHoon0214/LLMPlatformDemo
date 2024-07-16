@@ -1,0 +1,4 @@
+spring.security.oauth2.client.registration.google.client-id=[Client ID]
+spring.security.oauth2.client.registration.google.client-secret=[Client Secret]
+spring.security.oauth2.client.registration.google.scope[0]=email
+spring.security.oauth2.client.registration.google.scope[1]=profile

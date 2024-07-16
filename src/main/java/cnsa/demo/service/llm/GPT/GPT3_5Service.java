@@ -3,11 +3,15 @@ package cnsa.demo.service.llm.GPT;
 import cnsa.demo.DTO.messageDTO.GPTMessageDTO;
 import cnsa.demo.DTO.messageDTO.GlobalMessageDTO;
 import cnsa.demo.DTO.requestDTO.GptRequestDTO;
-import cnsa.demo.config.GPT3_5Config;
+import cnsa.demo.config.LLM.GPT3_5Config;
+import cnsa.demo.repository.MessageRepository;
+import cnsa.demo.repository.WorkspaceRepository;
 import cnsa.demo.service.llm.LLMService;
 import cnsa.demo.service.message.IMessageService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -24,8 +28,9 @@ public class GPT3_5Service extends LLMService {
     @Value("${openai.api.key}")
     private String apiKey;
 
-    protected GPT3_5Service(IMessageService messageService) {
-        super(messageService);
+    @Autowired
+    public GPT3_5Service(IMessageService messageService, MessageRepository messageRepository, HttpSession httpSession) {
+        super(messageService, messageRepository, httpSession);
     }
 
     @Override
@@ -37,6 +42,8 @@ public class GPT3_5Service extends LLMService {
                 .build();
 
         List<GPTMessageDTO> messages = new ArrayList<>();
+
+        int cnt=1;
 
         for (GlobalMessageDTO messageDTO : conversations) {
             GPTMessageDTO gptMessageDTO = new GPTMessageDTO();

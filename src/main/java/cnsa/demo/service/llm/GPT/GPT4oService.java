@@ -3,12 +3,15 @@ package cnsa.demo.service.llm.GPT;
 import cnsa.demo.DTO.messageDTO.GPTMessageDTO;
 import cnsa.demo.DTO.messageDTO.GlobalMessageDTO;
 import cnsa.demo.DTO.requestDTO.GptRequestDTO;
-import cnsa.demo.config.GPT3_5Config;
-import cnsa.demo.config.GPT4oConfig;
+import cnsa.demo.config.LLM.GPT4oConfig;
+import cnsa.demo.repository.MessageRepository;
+import cnsa.demo.repository.WorkspaceRepository;
 import cnsa.demo.service.llm.LLMService;
 import cnsa.demo.service.message.IMessageService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -24,18 +27,18 @@ public class GPT4oService extends LLMService {
     @Value("${openai.api.key}")
     private String apiKey;
 
-    protected GPT4oService(IMessageService messageService) {
-        super(messageService);
+    @Autowired
+    public GPT4oService(IMessageService messageService, MessageRepository messageRepository, HttpSession httpSession) {
+        super(messageService, messageRepository, httpSession);
     }
     @Override
     public Flux<String> getResponse(List<GlobalMessageDTO> conversations) {
+        List<GPTMessageDTO> messages = new ArrayList<>();
         WebClient webClient = WebClient.builder()
                 .baseUrl(GPT4oConfig.CHAT_URL)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(GPT4oConfig.AUTHORIZATION, GPT4oConfig.BEARER + apiKey)
                 .build();
-
-        List<GPTMessageDTO> messages = new ArrayList<>();
 
         for (GlobalMessageDTO messageDTO : conversations) {
             GPTMessageDTO gptMessageDTO = new GPTMessageDTO();

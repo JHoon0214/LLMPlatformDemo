@@ -1,10 +1,10 @@
-package cnsa.demo.entity;
+package cnsa.demo.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -19,4 +19,11 @@ public class Message {
 
     @Column(nullable = false)
     private String role;
+
+    @JoinColumn(name="workspace_id", nullable = false)
+    @ManyToOne
+    private Workspace workspace;
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
 }

@@ -38,3 +38,9 @@ out/
 
 ### Application Properties ###
 src/main/resources/application.properties
+src/main/resources/application-oauth.properties
+src/test/resources/application-test.properties
+
+### llm prompt
+src/main/java/cnsa/demo/config/LLM/GPT3_5System.java
+src/main/java/cnsa/demo/config/LLM/GPT4oSystem.java
