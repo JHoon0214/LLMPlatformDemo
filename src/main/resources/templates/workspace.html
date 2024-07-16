@@ -141,7 +141,7 @@
             document.getElementById('search-button').setAttribute('src', '/img/enter.svg');
         } else {
             // send
-            enter_message();
+            enter_message(null);
         }
     }
 
@@ -192,7 +192,7 @@
         }
     }
 
-    function enter_message() {
+    function enter_message(e) {
         if (selectedServiceID === -1) return;
         if (isPrinting) return;
 
@@ -201,7 +201,9 @@
 
         // workspace 선택 안됨 -> 새로 생성
         if (selectedWorkspaceId < 0) {
-            e.preventDefault();
+            if (e) {
+                e.preventDefault();
+            }
             fetch('/workspace/creation?llmModelId=' + selectedServiceID, {
                 method: 'POST'
             }).then(response => {
@@ -230,7 +232,6 @@
 
         console.log('Message sent:', this.innerText);
         // this.innerText = ''; // 입력 필드 비우기
-        enter_message();
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -239,7 +240,7 @@
         // Enter 키 처리
         editableDiv.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
-                enter_message();
+                enter_message(e);
             }
         });
     });
