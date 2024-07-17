@@ -22,6 +22,9 @@
 
     let chat_id_count = 0;
 
+    let messageElement = null;
+    let printingChatBox = null;
+
     document.addEventListener('DOMContentLoaded', function() {
         const serviceMessage = document.getElementById('service-message');
         const serviceItems = document.querySelectorAll('.service-select-box > div');
@@ -113,8 +116,22 @@
             new_chat_group.getElementsByClassName("system-chat-name")[0].innerText = selectedServiceName;
             new_chat_group.getElementsByClassName("system-chat-image")[0].src = '/img/' + selectedServiceImageUrl;
 
-            // message = message.replaceAll('&nbsp;', ' ');
+            const codeBlockRegex = /```([\s\S]*?)```/g;
+            message = message.replaceAll(codeBlockRegex, function(match, codeContent) {
+                let updatedContent = codeContent.replaceAll(/<br>/g, '\n');
+                updatedContent = updatedContent.replaceAll(/&nbsp;/g, ' ');
+                return '```' + updatedContent + '```';
+            });
+
+            // text = text.replaceAll('&nbsp;', ' ');
+            message = message.replaceAll(/```python([\s\S]*?)```/g, '<div class="code-box"><div class="code-box-header"><p>python</p><div class="code-copy-button"><img src="/img/code_copy.svg" width="11px" height="11px"><a>복사</a></div></div><pre><code class="language-python">$1</code></pre></div>');
+
+            message = message.replaceAll(/###&nbsp;(.*?)(?=<br>|$)/g, '<h3>$1</h3>');
+            message = message.replaceAll(/\*\*(.*?)\*\*/g, '<bold>$1</bold>');
+            // text = text.replaceAll(/`(.*?)`/g, '<code>$1</code>');
+
             new_chat_group.getElementsByClassName('chat')[0].innerHTML = message;
+            hljs.highlightAll();
 
             new_chat_group.getElementsByClassName('chat')[0].setAttribute('id', 'chat-' + chat_id_count);
             new_chat_group.getElementsByClassName('chat-button')[0].setAttribute('onclick', "copyText(" + chat_id_count + ");");
@@ -129,14 +146,47 @@
         }
     }
 
-    function loadWorkspaces() {
+    function replaceBrWithNewline(pythonCode) {
+        // 정규 표현식을 사용하여 ```python과 ``` 사이의 내용을 찾습니다.
+        const pythonBlockRegex = /```python\n([\s\S]*?)```/g;
 
+        return pythonCode.replace(pythonBlockRegex, function(match, codeContent) {
+            // Python 코드 블록 내에서 <br>을 \n으로 대체합니다.
+            const updatedContent = codeContent.replace(/<br>/g, '\n');
+            return '```python\n' + updatedContent + '```';
+        });
+    }
+
+
+    function updateMessageElement() {
+        let text = messageElement.getElementsByClassName('chat')[0].innerHTML;
+
+        const codeBlockRegex = /```([\s\S]*?)```/g;
+        text = text.replaceAll(codeBlockRegex, function(match, codeContent) {
+            let updatedContent = codeContent.replaceAll(/<br>/g, '\n');
+            updatedContent = updatedContent.replaceAll(/&nbsp;/g, ' ');
+            return '```' + updatedContent + '```';
+        });
+
+        // text = text.replaceAll('&nbsp;', ' ');
+        text = text.replaceAll(/```python([\s\S]*?)```/g, '<div class="code-box"><div class="code-box-header"><p>python</p><div class="code-copy-button"><img src="/img/code_copy.svg" width="11px" height="11px"><a>복사</a></div></div><pre><code class="language-python">$1</code></pre></div>');
+
+        text = text.replaceAll(/###(.+)$/gm, '<h3>$1</h3>');
+        text = text.replaceAll(/\*\*(.*?)\*\*/g, '<bold>$1</bold>');
+        // text = text.replaceAll(/`(.*?)`/g, '<code>$1</code>');
+
+        messageElement.getElementsByClassName('chat')[0].innerHTML = text;
+        console.log(messageElement);
+        hljs.highlightAll();
     }
 
     function search_button_click() {
+        if (document.getElementById('search-box').innerText.trim() === '') return;
+
         if (isPrinting) {
             // stop
             eventSource.close();
+            messageElement = null;
             isPrinting = false;
             document.getElementById('search-button').setAttribute('src', '/img/enter.svg');
         } else {
@@ -144,8 +194,6 @@
             enter_message(null);
         }
     }
-
-    let messageElement = null;
 
     function sendMessageToGpt4o() {
         const messageInput = document.getElementById("search-box");
@@ -174,14 +222,17 @@
                     // receivedMessageElement = appendMessage(event.data, 'received', receivedMessageElement);
                     messageElement = appendMessageSystem(message, messageElement);
                     // console.log(event.data);
+                    updateMessageElement();
                 };
 
                 eventSource.addEventListener('end', function(event) {
                     // appendMessage(event.data, 'end', receivedMessageElement);
                     messageElement = appendMessageSystem(event.data, messageElement);
+                    updateMessageElement();
                     // console.log('end');
                     // console.log(event.data);
                     eventSource.close();
+                    messageElement = null;
                     isPrinting = false;
                     document.getElementById('search-button').setAttribute('src', '/img/enter.svg');
                 });
@@ -201,9 +252,6 @@
 
         // workspace 선택 안됨 -> 새로 생성
         if (selectedWorkspaceId < 0) {
-            if (e) {
-                e.preventDefault();
-            }
             fetch('/workspace/creation?llmModelId=' + selectedServiceID, {
                 method: 'POST'
             }).then(response => {
@@ -240,15 +288,20 @@
         // Enter 키 처리
         editableDiv.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
-                enter_message(e);
+                e.preventDefault();
+                if (editableDiv.innerText.trim() !== '') {
+                    enter_message(e);
+                }
             }
         });
     });
 
-    function updateModelDesc(description, pricing) {
+    function updateModelDesc(description, pricing, imgUrl) {
         // console.log(description)
         document.getElementById("service-description").innerText = description;
         document.getElementById("model-price").innerText = pricing + " / 메시지";
+        document.getElementById("title-service-logo").removeAttribute('style');
+        document.getElementById("title-service-logo").src = "/img/" + imgUrl;
     }
 
     function changeSelectedID(serviceID, serviceImageUrl, serviceName) {
@@ -339,14 +392,16 @@
     }
 
     async function copyText(id) {
-        const output = document.getElementById('chat-' + id).textContent;
+        const output = document.getElementById('chat-' + id).innerText;
 
         if (output === '') {
             return;
         }
 
         try {
-            await navigator.clipboard.writeText(output);
+            let text = output.replaceAll('<br>', '\n');
+            text = text.replaceAll('&nbsp;', ' ');
+            await navigator.clipboard.writeText(text);
             const copyButton = document.getElementById('copy-button-' + id).getElementsByTagName('a')[0];
             copyButton.text = '완료';
 
@@ -442,7 +497,10 @@
 <div class="main-container">
     <spacer></spacer>
     <div class="container" id="selection-container">
-        <div class="main-title" id="service-message">서비스를 선택해서 채팅을 시작하세요.</div>
+        <div class="title-section">
+            <img id="title-service-logo" style="display: none;" src="" width="35px" height="35px" alt="">
+            <div class="main-title" id="service-message">서비스를 선택해서 채팅을 시작하세요.</div>
+        </div>
         <div class="service-price" style="display: none;">
             <img alt="" src="/img/coin.svg" width="12px" height="12px">
             <a id="model-price">1,000 / 메시지</a>
@@ -450,9 +508,12 @@
         <p class="service-description" id="service-description" style="display: none;">
         </p>
         <div class="service-select-box">
-            <div th:each="model:${models}" th:onclick="updateModelDesc([[${model.modelDesc}]], [[${model.price}]]); changeSelectedID([[${model.modelId}]], [[${model.imageUrl}]], [[${model.modelName}]]);">
+            <div th:each="model:${models}" th:onclick="updateModelDesc([[${model.modelDesc}]], [[${model.price}]], [[${model.imageUrl}]]); changeSelectedID([[${model.modelId}]], [[${model.imageUrl}]], [[${model.modelName}]]);">
                 <img alt="" th:src="@{/img/{image}(image=${model.imageUrl})}">
-                <div class="service-name">[[${model.modelName}]]</div>
+                <div class="service-info-row">
+                    <div class="service-name">[[${model.modelName}]]</div>
+                    <div class="short-desc">Short Description</div>
+                </div>
             </div>
         </div>
     </div>
