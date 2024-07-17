@@ -16,6 +16,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @Controller
 @RequiredArgsConstructor
@@ -50,13 +51,13 @@ public class workspaceController {
     }
 
     @PostMapping("/creation")
-    public ResponseEntity<Long> createWorkspace(@RequestParam Long llmModelId) {
+    public ResponseEntity<UUID> createWorkspace(@RequestParam Long llmModelId) {
         SessionUser user = (SessionUser) httpSession.getAttribute("user");
         return ResponseEntity.ok(workspaceService.createWorkspace(user.getEmail(), llmModelId));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Void> selectWorkspace(@PathVariable Long id) {
+    public ResponseEntity<Void> selectWorkspace(@PathVariable UUID id) {
         Workspace workspace = workspaceService.getWorkspace(id);
         httpSession.setAttribute("workspace", workspace);
         return ResponseEntity.ok(null);

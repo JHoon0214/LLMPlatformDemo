@@ -19,9 +19,6 @@ public class LLMModel {
     private String modelDesc;
 
     @Column(nullable = false)
-    private String shortDesc;
-
-    @Column(nullable = false)
     private Integer maxToken;
 
     @Column(nullable = false)
