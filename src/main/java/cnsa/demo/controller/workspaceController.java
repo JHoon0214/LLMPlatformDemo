@@ -1,10 +1,12 @@
 package cnsa.demo.controller;
 
+import cnsa.demo.DTO.LLMModelDTO;
 import cnsa.demo.DTO.Security.SessionUser;
 import cnsa.demo.DTO.workspaceDTO.WorkSpaceWithDateDTO;
 import cnsa.demo.DTO.workspaceDTO.WorkspaceDTO;
 import cnsa.demo.domain.Workspace;
 import cnsa.demo.service.llm.LLMModelService;
+import cnsa.demo.service.llm.LLMService;
 import cnsa.demo.service.workspace.WorkspaceService;
 import jakarta.servlet.http.HttpSession;
 import lombok.Data;
@@ -57,9 +59,12 @@ public class workspaceController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Void> selectWorkspace(@PathVariable UUID id) {
+    public ResponseEntity<Void> getWorkspaceInfo(@PathVariable UUID id) {
         Workspace workspace = workspaceService.getWorkspace(id);
+        System.out.println("model id: " + workspace.getLlmModel().getModelId());
+        LLMModelDTO llmModelDTO = llmModelService.getLLMInfo(workspace.getLlmModel().getModelId());
         httpSession.setAttribute("workspace", workspace);
+        httpSession.setAttribute("model", llmModelDTO);
         return ResponseEntity.ok(null);
     }
 }

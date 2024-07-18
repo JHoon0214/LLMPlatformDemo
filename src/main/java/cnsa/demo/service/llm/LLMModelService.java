@@ -18,6 +18,7 @@ public class LLMModelService {
     public LLMModelDTO getLLMInfo(Long llmId) {
         Optional<LLMModel> llmModel = llmModelRepository.findByModelId(llmId);
         if(llmModel.isEmpty()) throw new RuntimeException("There is no llm with id " + llmId);
+        System.out.println(llmModel.get().getModelName());
         return new LLMModelDTO(llmModel.get());
     }
 
