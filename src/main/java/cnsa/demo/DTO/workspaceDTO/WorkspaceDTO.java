@@ -11,11 +11,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @NoArgsConstructor
 public class WorkspaceDTO {
-    private Long id;
+    private UUID id;
     private String workspaceName;
     private LocalDateTime createdAt;
     private LocalDateTime editedAt;
@@ -23,7 +24,7 @@ public class WorkspaceDTO {
     private SessionUser user;
 
     @Builder
-    public WorkspaceDTO(Long id, String workspaceName, LocalDateTime createdAt, LocalDateTime editedAt, LLMModelDTO llmModel, SessionUser user) {
+    public WorkspaceDTO(UUID id, String workspaceName, LocalDateTime createdAt, LocalDateTime editedAt, LLMModelDTO llmModel, SessionUser user) {
         this.id=id;
         this.workspaceName=workspaceName;
         this.createdAt=createdAt;

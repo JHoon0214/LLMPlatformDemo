@@ -1,10 +1,12 @@
 package cnsa.demo.controller;
 
+import cnsa.demo.DTO.LLMModelDTO;
 import cnsa.demo.DTO.Security.SessionUser;
 import cnsa.demo.DTO.workspaceDTO.WorkSpaceWithDateDTO;
 import cnsa.demo.DTO.workspaceDTO.WorkspaceDTO;
 import cnsa.demo.domain.Workspace;
 import cnsa.demo.service.llm.LLMModelService;
+import cnsa.demo.service.llm.LLMService;
 import cnsa.demo.service.workspace.WorkspaceService;
 import jakarta.servlet.http.HttpSession;
 import lombok.Data;
@@ -16,6 +18,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @Controller
 @RequiredArgsConstructor
@@ -50,15 +53,18 @@ public class workspaceController {
     }
 
     @PostMapping("/creation")
-    public ResponseEntity<Long> createWorkspace(@RequestParam Long llmModelId) {
+    public ResponseEntity<UUID> createWorkspace(@RequestParam Long llmModelId) {
         SessionUser user = (SessionUser) httpSession.getAttribute("user");
         return ResponseEntity.ok(workspaceService.createWorkspace(user.getEmail(), llmModelId));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Void> selectWorkspace(@PathVariable Long id) {
+    public ResponseEntity<Void> getWorkspaceInfo(@PathVariable UUID id) {
         Workspace workspace = workspaceService.getWorkspace(id);
+        System.out.println("model id: " + workspace.getLlmModel().getModelId());
+        LLMModelDTO llmModelDTO = llmModelService.getLLMInfo(workspace.getLlmModel().getModelId());
         httpSession.setAttribute("workspace", workspace);
+        httpSession.setAttribute("model", llmModelDTO);
         return ResponseEntity.ok(null);
     }
 }

@@ -10,6 +10,7 @@ import cnsa.demo.service.message.IMessageService;
 import cnsa.demo.service.util.HtmlSymbolConverter;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
 
@@ -23,6 +24,7 @@ import java.util.Base64;
 import java.util.List;
 
 @RequiredArgsConstructor
+@Service
 public abstract class LLMService implements ILLMService {
 
     private final IMessageService messageService;

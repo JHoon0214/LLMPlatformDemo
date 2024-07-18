@@ -26,7 +26,7 @@ public class WorkspaceService {
     private final UserRepository userRepository;
     private final LLMModelRepository llmModelRepository;
 
-    public Long createWorkspace(String userEmail, Long llmId) {
+    public UUID createWorkspace(String userEmail, Long llmId) {
         Optional<User> byEmail = userRepository.findByEmail(userEmail);
         if(byEmail.isEmpty()) throw new RuntimeException("Error on WorkspaceServiceClass-createWorkspace(). There is no user with email " + userEmail);
 
@@ -87,14 +87,14 @@ public class WorkspaceService {
         return retList;
     }
 
-    public Workspace getWorkspace(Long workspaceId) {
+    public Workspace getWorkspace(UUID workspaceId) {
         Optional<Workspace> workspace = workspaceRepository.findById(workspaceId);
         if(workspace.isEmpty()) throw new RuntimeException("There is no workspace id with " + workspaceId);
 
         return workspace.get();
     }
 
-    public Long deleteWorkspace(Long workspaceId) {
+    public UUID deleteWorkspace(UUID workspaceId) {
         Optional<Workspace> workspace = workspaceRepository.findById(workspaceId);
         if (workspace.isPresent()) {
             workspaceRepository.deleteById(workspaceId);
@@ -104,7 +104,7 @@ public class WorkspaceService {
         }
     }
 
-    public void updateEditedTime(Long workspaceId) {
+    public void updateEditedTime(UUID workspaceId) {
         Optional<Workspace> workspace = workspaceRepository.findById(workspaceId);
         if(workspace.isEmpty()) throw new RuntimeException("Error on WorkspaceServiceClass-updateEditedTime(). There is no workspace with id " + workspace);
 

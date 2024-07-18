@@ -6,17 +6,21 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.antlr.v4.runtime.misc.NotNull;
+import org.hibernate.annotations.GenericGenerators;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @NoArgsConstructor
 @Entity
 public class Workspace {
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @GeneratedValue
+    @UuidGenerator
     @Column(name="workspace_id", nullable = false)
-    private Long id;
+    private UUID id;
 
     @Column(name="workspace_name", nullable = false)
     private String workspaceName;
