@@ -463,6 +463,15 @@
         e.preventDefault();
     }
 
+    function goToWorkspace(wid) {
+        console.log(wid);
+        window.location.href = "/workspace/infos?wid=" + wid;
+    }
+
+    function goToHome() {
+        window.location.href = "/workspace/infos";
+    }
+
 </script>
 <body>
 <div class="headerbar">
@@ -474,15 +483,15 @@
 </div>
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
-        <div class="logo" onclick="location.reload();">Miir</div>
-        <img alt="" class="new-button" src="/img/add_button.svg" width="18px" height="18px" onclick="location.reload();">
+        <div class="logo" th:onclick="goToHome();">Miir</div>
+        <img alt="" class="new-button" src="/img/add_button.svg" width="18px" height="18px" onclick="goToHome();">
     </div>
     <div th:fragment="sidebar-content">
         <div class="sidebar-content">
             <div class="chat-section" th:each="workspace:${workspaces}">
                 <div class="chat-date">[[${workspace.date}]]</div>
                 <div>
-                    <div class="chat-row" th:each="ws:${workspace.workspaces}" th:onclick="openWorkspace([[${ws.id}]], [[${ws.llmModel.modelId}]], [[${ws.llmModel.imageUrl}]], [[${ws.llmModel.modelName}]]);">
+                    <div class="chat-row" th:each="ws:${workspace.workspaces}" th:onclick="goToWorkspace([[${ws.id}]]);">
                         <img alt="" th:src="@{/img/{image}(image=${ws.llmModel.imageUrl})}">
                         <div>
                             <div class="service-name">[[${ws.llmModel.modelName}]]</div>
