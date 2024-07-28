@@ -1,11 +1,8 @@
 package cnsa.demo.DTO.workspaceDTO;
 
 import cnsa.demo.DTO.LLMModelDTO;
-import cnsa.demo.DTO.Security.SessionUser;
-import cnsa.demo.domain.LLMModel;
-import cnsa.demo.domain.User;
+import cnsa.demo.DTO.User.UserDTO;
 import cnsa.demo.domain.Workspace;
-import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,10 +18,10 @@ public class WorkspaceDTO {
     private LocalDateTime createdAt;
     private LocalDateTime editedAt;
     private LLMModelDTO llmModel;
-    private SessionUser user;
+    private UserDTO user;
 
     @Builder
-    public WorkspaceDTO(UUID id, String workspaceName, LocalDateTime createdAt, LocalDateTime editedAt, LLMModelDTO llmModel, SessionUser user) {
+    public WorkspaceDTO(UUID id, String workspaceName, LocalDateTime createdAt, LocalDateTime editedAt, LLMModelDTO llmModel, UserDTO user) {
         this.id=id;
         this.workspaceName=workspaceName;
         this.createdAt=createdAt;
@@ -34,6 +31,6 @@ public class WorkspaceDTO {
     }
 
     public WorkspaceDTO(Workspace workspace) {
-        this(workspace.getId(), workspace.getWorkspaceName(), workspace.getCreatedAt(), workspace.getEditedAt(), new LLMModelDTO(workspace.getLlmModel()), new SessionUser(workspace.getUser()));
+        this(workspace.getId(), workspace.getWorkspaceName(), workspace.getCreatedAt(), workspace.getEditedAt(), new LLMModelDTO(workspace.getLlmModel()), new UserDTO(workspace.getUser()));
     }
 }

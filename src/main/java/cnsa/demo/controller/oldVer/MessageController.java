@@ -1,9 +1,9 @@
-package cnsa.demo.controller;
+package cnsa.demo.controller.oldVer;
 
 import cnsa.demo.DTO.messageDTO.GlobalMessageDTO;
 import cnsa.demo.config.LLM.LLMConfig;
 import cnsa.demo.domain.Workspace;
-import cnsa.demo.service.message.IMessageService;
+import cnsa.demo.service.oldVer.message.IMessageService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

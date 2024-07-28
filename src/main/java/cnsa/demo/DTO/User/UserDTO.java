@@ -1,18 +1,20 @@
-package cnsa.demo.DTO.Security;
+package cnsa.demo.DTO.User;
 
 import cnsa.demo.domain.User;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
 @Getter
-public class SessionUser implements Serializable {
+@NoArgsConstructor
+public class UserDTO implements Serializable {
 
     private String name;
     private String email;
     private String picture;
 
-    public SessionUser(User user) {
+    public UserDTO(User user) {
         this.name = user.getName();
         this.email = user.getEmail();
         this.picture = user.getPicture();

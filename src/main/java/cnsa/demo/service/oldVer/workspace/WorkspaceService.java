@@ -1,6 +1,5 @@
-package cnsa.demo.service.workspace;
+package cnsa.demo.service.oldVer.workspace;
 
-import cnsa.demo.DTO.LLMModelDTO;
 import cnsa.demo.DTO.workspaceDTO.WorkSpaceWithDateDTO;
 import cnsa.demo.DTO.workspaceDTO.WorkspaceDTO;
 import cnsa.demo.domain.LLMModel;
@@ -9,11 +8,7 @@ import cnsa.demo.domain.Workspace;
 import cnsa.demo.repository.LLMModelRepository;
 import cnsa.demo.repository.UserRepository;
 import cnsa.demo.repository.WorkspaceRepository;
-import cnsa.demo.service.llm.LLMModelService;
-import cnsa.demo.service.llm.LLMService;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.bytecode.internal.bytebuddy.BytecodeProviderImpl;
-import org.hibernate.jdbc.Work;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

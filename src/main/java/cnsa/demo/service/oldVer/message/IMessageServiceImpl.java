@@ -1,14 +1,12 @@
-package cnsa.demo.service.message;
+package cnsa.demo.service.oldVer.message;
 
 import cnsa.demo.DTO.messageDTO.GlobalMessageDTO;
-import cnsa.demo.DTO.workspaceDTO.WorkspaceDTO;
 import cnsa.demo.domain.Message;
 import cnsa.demo.domain.Workspace;
 import cnsa.demo.repository.MessageRepository;
 import cnsa.demo.repository.WorkspaceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestAttribute;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

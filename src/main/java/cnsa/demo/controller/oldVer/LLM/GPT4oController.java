@@ -1,7 +1,7 @@
-package cnsa.demo.controller.LLM;
+package cnsa.demo.controller.oldVer.LLM;
 
 import cnsa.demo.domain.Workspace;
-import cnsa.demo.service.llm.ILLMService;
+import cnsa.demo.service.oldVer.llm.ILLMService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;

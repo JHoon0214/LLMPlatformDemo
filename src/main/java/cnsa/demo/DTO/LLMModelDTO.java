@@ -1,8 +1,6 @@
 package cnsa.demo.DTO;
 
-import cnsa.demo.DTO.Security.SessionUser;
 import cnsa.demo.domain.LLMModel;
-import cnsa.demo.domain.Workspace;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

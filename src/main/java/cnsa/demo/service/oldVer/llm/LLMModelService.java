@@ -1,9 +1,8 @@
-package cnsa.demo.service.llm;
+package cnsa.demo.service.oldVer.llm;
 
 import cnsa.demo.DTO.LLMModelDTO;
 import cnsa.demo.domain.LLMModel;
 import cnsa.demo.repository.LLMModelRepository;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

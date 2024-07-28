@@ -1,14 +1,11 @@
-package cnsa.demo.controller;
+package cnsa.demo.controller.oldVer;
 
-import cnsa.demo.DTO.Security.SessionUser;
+import cnsa.demo.DTO.User.UserDTO;
 import cnsa.demo.DTO.workspaceDTO.WorkSpaceWithDateDTO;
-import cnsa.demo.DTO.workspaceDTO.WorkspaceDTO;
 import cnsa.demo.domain.Workspace;
-import cnsa.demo.service.llm.LLMModelService;
-import cnsa.demo.service.workspace.WorkspaceService;
+import cnsa.demo.service.oldVer.llm.LLMModelService;
+import cnsa.demo.service.oldVer.workspace.WorkspaceService;
 import jakarta.servlet.http.HttpSession;
-import lombok.Data;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -34,7 +31,7 @@ public class workspaceController {
 
     @GetMapping("/infos")
     public String getWorkspaces(Model model) {
-        SessionUser user = (SessionUser) httpSession.getAttribute("user");
+        UserDTO user = (UserDTO) httpSession.getAttribute("user");
         List<WorkSpaceWithDateDTO> workspaces = workspaceService.getWorkspaces(user.getEmail());
         model.addAttribute("workspaces", workspaces);
         model.addAttribute("models", llmModelService.getAllLLMInfo());
@@ -44,7 +41,7 @@ public class workspaceController {
 
     @GetMapping("/refreshedWorkspace")
     public String refreshWorkspace(Model model) {
-        SessionUser user = (SessionUser) httpSession.getAttribute("user");
+        UserDTO user = (UserDTO) httpSession.getAttribute("user");
         List<WorkSpaceWithDateDTO> workSpaceWithDateDTOS = workspaceService.getWorkspaces(user.getEmail());
         model.addAttribute("workspaces", workSpaceWithDateDTOS);
         return "workspace::sidebar-content";
@@ -52,7 +49,7 @@ public class workspaceController {
 
     @PostMapping("/creation")
     public ResponseEntity<UUID> createWorkspace(@RequestParam Long llmModelId) {
-        SessionUser user = (SessionUser) httpSession.getAttribute("user");
+        UserDTO user = (UserDTO) httpSession.getAttribute("user");
         return ResponseEntity.ok(workspaceService.createWorkspace(user.getEmail(), llmModelId));
     }
 

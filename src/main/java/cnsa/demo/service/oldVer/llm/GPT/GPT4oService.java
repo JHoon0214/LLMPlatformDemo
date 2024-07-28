@@ -1,13 +1,12 @@
-package cnsa.demo.service.llm.GPT;
+package cnsa.demo.service.oldVer.llm.GPT;
 
 import cnsa.demo.DTO.messageDTO.GPTMessageDTO;
 import cnsa.demo.DTO.messageDTO.GlobalMessageDTO;
 import cnsa.demo.DTO.requestDTO.GptRequestDTO;
 import cnsa.demo.config.LLM.GPT4oConfig;
 import cnsa.demo.repository.MessageRepository;
-import cnsa.demo.repository.WorkspaceRepository;
-import cnsa.demo.service.llm.LLMService;
-import cnsa.demo.service.message.IMessageService;
+import cnsa.demo.service.oldVer.llm.LLMService;
+import cnsa.demo.service.oldVer.message.IMessageService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpSession;
