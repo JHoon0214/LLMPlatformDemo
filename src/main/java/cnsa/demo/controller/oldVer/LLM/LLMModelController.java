@@ -1,7 +1,7 @@
-package cnsa.demo.controller.LLM;
+package cnsa.demo.controller.oldVer.LLM;
 
 import cnsa.demo.DTO.LLMModelDTO;
-import cnsa.demo.service.llm.LLMModelService;
+import cnsa.demo.service.oldVer.llm.LLMModelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;

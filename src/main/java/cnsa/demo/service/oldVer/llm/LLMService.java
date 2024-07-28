@@ -1,4 +1,4 @@
-package cnsa.demo.service.llm;
+package cnsa.demo.service.oldVer.llm;
 
 import cnsa.demo.DTO.messageDTO.GlobalMessageDTO;
 import cnsa.demo.config.LLM.LLMConfig;
@@ -6,20 +6,17 @@ import cnsa.demo.config.LLM.LLMConfig;
 import cnsa.demo.domain.Message;
 import cnsa.demo.domain.Workspace;
 import cnsa.demo.repository.MessageRepository;
-import cnsa.demo.service.message.IMessageService;
-import cnsa.demo.service.util.HtmlSymbolConverter;
+import cnsa.demo.service.oldVer.message.IMessageService;
+import cnsa.demo.service.oldVer.util.HtmlSymbolConverter;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 
 @RequiredArgsConstructor

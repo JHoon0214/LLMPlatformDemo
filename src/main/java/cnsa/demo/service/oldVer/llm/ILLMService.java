@@ -1,4 +1,4 @@
-package cnsa.demo.service.llm;
+package cnsa.demo.service.oldVer.llm;
 
 import cnsa.demo.DTO.messageDTO.GlobalMessageDTO;
 import cnsa.demo.domain.Workspace;
